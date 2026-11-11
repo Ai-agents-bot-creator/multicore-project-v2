@@ -1,0 +1,29 @@
+# Simulation build artifacts
+sim_build/
+sim_build_mut/
+sim_build*/
+*.vvp
+results.xml
+*.vcd
+*.fst
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backup files
+*.bak
+*.backup

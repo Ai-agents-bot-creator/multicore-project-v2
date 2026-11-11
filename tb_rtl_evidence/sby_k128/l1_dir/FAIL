@@ -1,0 +1,6 @@
+Elapsed clock time [H:MM:SS (secs)]: 4:30:44 (16244)
+Elapsed process time [H:MM:SS (secs)]: 4:29:28 (16168)
+engine_0 (smtbmc boolector) returned FAIL
+counterexample trace: engine_0/trace.vcd
+counterexample trace: engine_0/trace.yw
+  failed assertion fml_l1_dir.\u_sva.a2_2 at sva_l1_dir.sv:74.5-75.65 step 48

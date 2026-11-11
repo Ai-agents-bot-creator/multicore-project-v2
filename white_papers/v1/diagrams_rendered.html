@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HLD / LLD Diagrams — 4&#215;4 Full Architecture</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: #f4f5f7; color: #1c2733; }
+  header { background: #16324f; color: #fff; padding: 18px 28px; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  header p { margin: 6px 0 0; font-size: 13px; opacity: .85; }
+  main { padding: 20px 28px 60px; max-width: 1500px; margin: 0 auto; }
+  .card { background: #fff; border: 1px solid #d8dee6; border-radius: 8px; margin: 0 0 24px; padding: 14px 18px 6px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .cardhead { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid #e8ecf1; padding-bottom: 8px; margin-bottom: 10px; }
+  .cardhead h3 { margin: 0; font-size: 16px; flex: 1; }
+  .num { background: #16324f; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+  .file { font-size: 11px; color: #6b7785; font-family: Consolas, monospace; }
+  pre.mermaid { margin: 0 0 14px; text-align: center; background: transparent; }
+  footer { text-align: center; font-size: 12px; color: #6b7785; padding: 0 0 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>HLD / LLD Diagrams — 4&#215;4 Full Architecture</h1>
+  <p>Derived exclusively from FINAL_whitepaper_v3.0.md. &#9888; marks content not specified in the white paper and is deliberately not invented.</p>
+</header>
+<main>
+  <div class="card">
+    <div class="cardhead"><span class="num">1</span><h3>HLD-1: 4&#215;4 Mesh System</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph MESH[&quot;4x4 2D mesh - 16 identical CPU tiles (WP 3.1, 3.5)&quot;]
+        direction TB
+        subgraph ROW0[&quot;mesh row Y0&quot;]
+            direction LR
+            P00[&quot;position 0,0&lt;br/&gt;CPU tile&lt;br/&gt;3 active ports&quot;] ~~~ P01[&quot;position 1,0&lt;br/&gt;CPU tile&lt;br/&gt;5-port router&quot;] ~~~ P02[&quot;position 2,0&lt;br/&gt;CPU tile&lt;br/&gt;5-port router&quot;] ~~~ P03[&quot;position 3,0&lt;br/&gt;CPU tile&lt;br/&gt;3 active ports&quot;]
+        end
+        subgraph ROW1[&quot;mesh row Y1&quot;]
+            direction LR
+            P10[&quot;position 0,1&lt;br/&gt;CPU tile&lt;br/&gt;4 active ports&quot;] ~~~ P11[&quot;position 1,1&lt;br/&gt;CPU tile&lt;br/&gt;5 ports active&quot;] ~~~ P12[&quot;position 2,1&lt;br/&gt;CPU tile&lt;br/&gt;5 ports active&quot;] ~~~ P13[&quot;position 3,1&lt;br/&gt;CPU tile&lt;br/&gt;4 active ports&quot;]
+        end
+        subgraph ROW2[&quot;mesh row Y2&quot;]
+            direction LR
+            P20[&quot;position 0,2&lt;br/&gt;CPU tile&lt;br/&gt;4 active ports&quot;] ~~~ P21[&quot;position 1,2&lt;br/&gt;CPU tile&lt;br/&gt;5 ports active&quot;] ~~~ P22[&quot;position 2,2&lt;br/&gt;CPU tile&lt;br/&gt;5 ports active&quot;] ~~~ P23[&quot;position 3,2&lt;br/&gt;CPU tile&lt;br/&gt;4 active ports&quot;]
+        end
+        subgraph ROW3[&quot;mesh row Y3&quot;]
+            direction LR
+            P30[&quot;position 0,3&lt;br/&gt;CPU tile&lt;br/&gt;3 active ports&quot;] ~~~ P31[&quot;position 1,3&lt;br/&gt;CPU tile&lt;br/&gt;5-port router&quot;] ~~~ P32[&quot;position 2,3&lt;br/&gt;CPU tile&lt;br/&gt;5-port router&quot;] ~~~ P33[&quot;position 3,3&lt;br/&gt;CPU tile&lt;br/&gt;3 active ports&quot;]
+        end
+        P00 &lt;--&gt; P01
+        P01 &lt;--&gt; P02
+        P02 &lt;--&gt; P03
+        P10 &lt;--&gt; P11
+        P11 &lt;--&gt; P12
+        P12 &lt;--&gt; P13
+        P20 &lt;--&gt; P21
+        P21 &lt;--&gt; P22
+        P22 &lt;--&gt; P23
+        P30 &lt;--&gt; P31
+        P31 &lt;--&gt; P32
+        P32 &lt;--&gt; P33
+        P00 &lt;--&gt; P10
+        P01 &lt;--&gt; P11
+        P02 &lt;--&gt; P12
+        P03 &lt;--&gt; P13
+        P10 &lt;--&gt; P20
+        P11 &lt;--&gt; P21
+        P12 &lt;--&gt; P22
+        P13 &lt;--&gt; P23
+        P20 &lt;--&gt; P30
+        P21 &lt;--&gt; P31
+        P22 &lt;--&gt; P32
+        P23 &lt;--&gt; P33
+    end
+    NOTE1[&quot;One 5-port router module (LOCAL, N, S, E, W) at every position.&lt;br/&gt;Unused edge and corner ports are tied off and pruned by synthesis - WP 3.5.&quot;]
+    NOTE2[&quot;XY deterministic routing, X first then Y.&lt;br/&gt;VC assigned at source NIC, never changed by any router - WP 3.5, 4.6 Layer 1.&quot;]
+    NOTE3[&quot;Tile IDs in flit headers are logical (8-bit field).&lt;br/&gt;Tile-ID to mesh-position mapping: NOT SPECIFIED IN WP.&quot;]
+    NOTE4[&quot;DMA variant [gated]: one position becomes a DMA device tile&lt;br/&gt;(no L2 bank, no directory, no tap) - its home code is reserved - WP 3.6, 3.11.&quot;]
+    MESH --- NOTE1
+    MESH --- NOTE2
+    MESH --- NOTE3
+    MESH --- NOTE4</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">2</span><h3>HLD-2: CPU Tile Internal Blocks and Datapaths</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    CORE[&quot;1 Core / stimulus interface&lt;br/&gt;master port: load / store / flush&lt;br/&gt;no fence or atomic opcode&quot;]
+    L1[&quot;2 L1 cache - private&lt;br/&gt;4 sets x 4 ways x 64 B = 1 KB&lt;br/&gt;write-back write-allocate, tree-PLRU 3 b/set, MESI per line&quot;]
+    MUX[&quot;8 Intra-tile mux&lt;br/&gt;routes local vs remote requests&lt;br/&gt;routes incoming packets by message type&quot;]
+    NIC[&quot;5 NIC&lt;br/&gt;packetisation, class to VC assignment,&lt;br/&gt;TX/RX FIFOs, credit management&quot;]
+    ROUTER[&quot;6 Router - one 5-port module&lt;br/&gt;LOCAL, N, S, E, W - 4 VCs per port - 4-stage RC/VA/SA/ST&quot;]
+    DIR[&quot;Directory / L2 controller + DTR&lt;br/&gt;one outstanding transaction per bank - WP 3.7&quot;]
+    DARR[&quot;4 Directory array - separate from data and tag arrays&lt;br/&gt;32 entries x 24 b used, padded to 32 b&quot;]
+    BANK[&quot;3 L2 data bank - shared distributed&lt;br/&gt;8 sets x 4 ways x 64 B = 2 KB, tree-PLRU 3 b/set&quot;]
+    TAP[&quot;7 Memory tap - behavioural backing store&lt;br/&gt;256 MB home slice, 1 cycle, one per CPU tile&quot;]
+
+    CORE --&gt; L1
+    L1 --&gt; MUX
+    MUX --&gt;|&quot;local home: addr 14:11 equals tile id&lt;br/&gt;direct path, no NoC traversal - ruling R1&quot;| DIR
+    MUX --&gt;|&quot;remote home: off-tile request&quot;| NIC
+    NIC --&gt;|&quot;remote REQ / UNBLOCK / INVACK / DATAFWD&lt;br/&gt;destined to this tile as home&quot;| DIR
+    NIC --&gt;|&quot;INV, FWD_GETS, FWD_GETM, DATA, PUTACK&lt;br/&gt;destined to this tile as holder&quot;| L1
+    DIR &lt;--&gt; DARR
+    DIR --&gt;|&quot;single serialized bank port - ruling R2&lt;br/&gt;fills, remote requests, tap traffic all queue&quot;| BANK
+    DIR --&gt;|&quot;read on bank miss during DIR_MEM_WAIT;&lt;br/&gt;write on DIR_EVICT WRITE_BACK - ruling R3&quot;| TAP
+    NIC &lt;--&gt;|&quot;direct connection - ruling R4&lt;br/&gt;tap is not a pass-through on this path&quot;| ROUTER
+    ROUTER &lt;--&gt;|&quot;N port&quot;| WN[&quot;north mesh link&quot;]
+    ROUTER &lt;--&gt;|&quot;E port&quot;| WE[&quot;east mesh link&quot;]
+    ROUTER &lt;--&gt;|&quot;S port&quot;| WS[&quot;south mesh link&quot;]
+    ROUTER &lt;--&gt;|&quot;W port&quot;| WW[&quot;west mesh link&quot;]
+    BANK -.-&gt;|&quot;PUTM / DATAFWD dirty data written into the bank&lt;br/&gt;dirty line lives in the owner L1 while DIR_M,&lt;br/&gt;bank copy is stale - WP 3.2 inclusion policy&quot;| DIR
+    BANK -.-&gt;|&quot;cold miss: bank tag miss during DIR_MEM_WAIT&lt;br/&gt;then the tap supplies the line - ruling R3&quot;| TAP</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">3</span><h3>HLD-3: DMA Device Tile Variant [gated] (&#167;3.11, &#167;3.1)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart LR
+    subgraph DMA_TILE[&quot;DMA device tile - gated at Week 8 (WP 3.11)&quot;]
+        ENGINE[&quot;DMA engine - two channels&quot;]
+        REGS[&quot;Memory-mapped register file&lt;br/&gt;per channel: SRC_LO 0x00, DST_LO 0x04, LEN 0x08 (must be 64),&lt;br/&gt;CTRL 0x0C, STATUS 0x10, COUNT 0x14&quot;]
+        L1L[&quot;L1-lite cache&lt;br/&gt;2 sets x 2 ways x 64 B&quot;]
+        DNIC[&quot;NIC - same class to VC mapping as CPU tiles&quot;]
+        DROUTER[&quot;Router - same 5-port module&quot;]
+        ENGINE --&gt; REGS --&gt; L1L --&gt; DNIC --&gt; DROUTER
+    end
+    MESH_LINK[&quot;Mesh link to the rest of the 4x4 fabric&quot;]
+    DROUTER &lt;--&gt; MESH_LINK
+    ABSENT[&quot;ABSENT by construction:&lt;br/&gt;no L2 bank, no directory, no memory tap&quot;]
+    MSGS[&quot;Messages [gated]:&lt;br/&gt;DMA_WRITE code 1100, REQ, VC0, 9 flits (write with inline data)&lt;br/&gt;DMA_ACK code 1101, RESP, VC2, 1 flit&lt;br/&gt;DMA_READ is NOT DEFINED - a DMA read is a GETS issued by the L1-lite,&lt;br/&gt;distinguished only by the source tile ID - WP 3.3&quot;]
+    SLOTS[&quot;Tile-slot cost at 4x4: 15 CPU tiles + 1 DMA tile = 15 L2 banks = 30 KB.&lt;br/&gt;16-bit sharer vector exactly saturated (15 CPU L1s + 1 DMA L1-lite).&lt;br/&gt;The DMA slot&#39;s home-tile code is reserved / unmapped - assertion A8.4.&quot;]
+    DMA_TILE --- MSGS
+    DMA_TILE --- SLOTS
+    ABSENT -.-&gt; DMA_TILE</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">4</span><h3>HLD-4: Message / Class / VC Plane (&#167;3.3, &#167;3.5, &#167;4.5, &#167;4.6)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart LR
+    subgraph CLS[&quot;Four message classes to four virtual channels - VC count frozen at 4&quot;]
+        direction TB
+        VC0[&quot;VC0 - REQ&lt;br/&gt;GETS 0000, GETM 0001, PUTS 0010, PUTM 0011&lt;br/&gt;[gated] DMA_WRITE 1100&lt;br/&gt;1 flit, except PUTM = 9 flits&quot;]
+        VC1[&quot;VC1 - FWD&lt;br/&gt;FWD_GETS 1000, FWD_GETM 1001&lt;br/&gt;1 flit each&quot;]
+        VC2[&quot;VC2 - RESP&lt;br/&gt;DATA 0111 (9), DATAFWD 1010 (9), INVACK 0110,&lt;br/&gt;UNBLOCK 0100, PUTACK 1011&lt;br/&gt;[gated] DMA_ACK 1101&lt;br/&gt;1 flit, except DATA and DATAFWD = 9&quot;]
+        VC3[&quot;VC3 - INV&lt;br/&gt;INV 0101&lt;br/&gt;1 flit&quot;]
+    end
+    FIFO[&quot;Per-port FIFO: depth 4 flits per VC.&lt;br/&gt;Credit-based flow control: 4-bit credit counter initialised to 4.&quot;]
+    PRIO[&quot;Arbitration priority within an input port:&lt;br/&gt;RESP greater than INV greater than FWD greater than REQ,&lt;br/&gt;overridden by the age escape: waited at least 8 rounds, grant next.&quot;]
+    RANK[&quot;Deadlock rank (Layer 2, WP 4.6): REQ 0, FWD 1, INV 2, RESP 3.&lt;br/&gt;Every inter-class causal edge ascends; RESP is terminal.&lt;br/&gt;UNBLOCK and PUTACK ride VC2 because they are causally downstream of DATA / PUT.&lt;br/&gt;INVACK rides VC2 although caused by INV(VC3) - the INV to INVACK case is exactly why&lt;br/&gt;the naive lower-numbered-VC rule is not used.&quot;]
+    RESV[&quot;Codes 1110 and 1111 reserved - not decoded by any RTL.&quot;]
+    CLS --- FIFO
+    CLS --- PRIO
+    CLS --- RANK
+    CLS --- RESV</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">5</span><h3>HLD-5: Verification Environment (&#167;5)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    DUT[&quot;DUT: 4x4 mesh RTL (simulation)&lt;br/&gt;2x2 mesh RTL (formal and FPGA)&quot;]
+    subgraph SIM[&quot;Simulation - Verilator + pyuvm / cocotb&quot;]
+        direction TB
+        TEST[&quot;Test - top-level stimulus, directed 1-17 (+18-22 gated)&quot;]
+        ENV[&quot;Environment&quot;]
+        AGENT[&quot;Agent per tile: driver, monitor, sequencer&quot;]
+        RMODEL[&quot;Reference model - TRANSACTION-level Python MESI model&lt;br/&gt;shadow L1 / L2 / directory / address to data map / outstanding set&lt;br/&gt;computes state AND data after each transaction&quot;]
+        SCORE[&quot;Scoreboard - compares after every transaction:&lt;br/&gt;L1 state, L1 data, L2 state, L2 data, dir state, dir owner,&lt;br/&gt;dir sharers, memory contents&quot;]
+        COV[&quot;Coverage collector - numeric closure: 100 percent legal bins,&lt;br/&gt;100 percent FSM states and transitions, 98 percent line / branch,&lt;br/&gt;95 percent toggle, 238 state x message cross terms&quot;]
+        TEST --&gt; ENV --&gt; AGENT --&gt; SCORE
+        RMODEL --&gt; SCORE
+        COV --&gt; SCORE
+    end
+    subgraph SVA[&quot;SVA simulation - Vivado xsim, bind&quot;]
+        direction TB
+        BIND[&quot;42 assertions bound via bind - non-invasive&quot;]
+        CATS[&quot;A1 MESI invariants 5, A2 directory 7, A3 message protocol 6,&lt;br/&gt;A4 flow control 8, A5 bounded liveness 4, A6 data integrity 4,&lt;br/&gt;A7 FSM legality 4, A8 address and routing 4&quot;]
+        BIND --- CATS
+    end
+    subgraph FORMAL[&quot;Formal - Yosys / SymbiYosys on the 2x2 model&quot;]
+        direction TB
+        BMC[&quot;Safety: BMC, depth K = 64, plus mode prove k-induction&lt;br/&gt;A1, A2, A3, A4, A6, A7, A8&quot;]
+        LIVE[&quot;Bounded liveness with derived bound T = 64 cycles,&lt;br/&gt;under Premise F: no orphan transient, no message loss,&lt;br/&gt;bounded service within 8 arbitration rounds&quot;]
+        DEAD[&quot;Deadlock lemma of WP 4.6, premises confirmed by k-induction at k = 16&quot;]
+        INV[&quot;Formal-only network invariants I1 to I7 - not part of the 42&lt;br/&gt;XY path, VC equals class, credit invariant, zero-credit stall,&lt;br/&gt;per-VC FIFO order, delivery or termination&quot;]
+        BMC --- LIVE
+        DEAD --- INV
+    end
+    CI[&quot;CI: GitHub Actions, all toolchains pinned&lt;br/&gt;directed + random + bound SVA + formal on every commit&quot;]
+    DUT --&gt; SIM
+    DUT --&gt; SVA
+    DUT --&gt; FORMAL
+    SIM --- CI
+    SVA --- CI
+    FORMAL --- CI</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">6</span><h3>LLD-1: Router Microarchitecture (&#167;3.5, &#167;4.6)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart LR
+    subgraph IN[&quot;Input side - 5 ports: LOCAL, N, S, E, W&quot;]
+        direction TB
+        FIFOS[&quot;Per port, per VC input FIFO&lt;br/&gt;4 ports x 4 VCs x 4 flits x 64 b = 5120 b = 640 B per router&quot;]
+        CREDIT_IN[&quot;Credit counter per VC: 4 bit, init = downstream FIFO depth 4.&lt;br/&gt;Transmit only when credit available; credit returns when downstream FIFO advances.&quot;]
+        FIFOS --- CREDIT_IN
+    end
+    RC[&quot;Stage 1 RC - route compute&lt;br/&gt;XY: X first then Y, no Y to X turn&lt;br/&gt;reads header dest field 63:56&quot;]
+    VA[&quot;Stage 2 VA - VC allocation&lt;br/&gt;VC index taken from header 43:42, never rewritten&lt;br/&gt;VC preservation keeps per-VC channel sets disjoint&quot;]
+    SA[&quot;Stage 3 SA - two-level switch arbitration&lt;br/&gt;Level 1 per input VC: fixed class priority RESP greater than INV greater than FWD greater than REQ,&lt;br/&gt;age escape - a VC waiting at least 8 rounds is granted next&lt;br/&gt;Level 2 per output port: round-robin across input ports&quot;]
+    ST[&quot;Stage 4 ST - switch traversal through 5x5 crossbar&lt;br/&gt;4 cycles of hop latency per router&quot;]
+    subgraph OUT[&quot;Output side&quot;]
+        direction TB
+        XBAR[&quot;Wormhole: header reserves the path, body flits follow,&lt;br/&gt;output released when the header LEN count completes&quot;]
+        CREDIT_OUT[&quot;Credit return to upstream router&quot;]
+        XBAR --- CREDIT_OUT
+    end
+    IN --&gt; RC --&gt; VA --&gt; SA --&gt; ST --&gt; OUT
+    TIE[&quot;Unused edge and corner ports tied off;&lt;br/&gt;synthesis prunes the tied-off logic.&quot;]
+    DEADLOCK[&quot;Deadlock freedom does not depend on the arbiter.&lt;br/&gt;Layer 1: XY plus VC preservation, acyclic CDG per VC.&quot;]
+    IN --- TIE
+    SA --- DEADLOCK</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">7</span><h3>LLD-2: L1 MESI Controller FSM (Appendix A)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">stateDiagram-v2
+    direction TB
+    [*] --&gt; I
+    I --&gt; IS_D : Load miss, send GETS on VC0
+    IS_D --&gt; S : DATA shared, install, send UNBLOCK on VC2
+    IS_D --&gt; E : DATA exclusive, install, send UNBLOCK on VC2
+    I --&gt; IM_D : Store miss, send GETM on VC0
+    IM_D --&gt; M : DATA exclusive, install, write, send UNBLOCK on VC2
+    S --&gt; SM_D : Store hit, send GETM on VC0
+    SM_D --&gt; M : DATA exclusive, write store data, send UNBLOCK on VC2
+    E --&gt; M : Store hit, silent upgrade, no message, L1 authoritative for E vs M
+    M --&gt; MI_A : Eviction, send PUTM on VC0, 9 flits with dirty line
+    MI_A --&gt; I : PUTACK, release the way
+    E --&gt; EI_A : Eviction, send PUTS on VC0, 1 flit, no data
+    EI_A --&gt; I : PUTACK, release the way
+    S --&gt; I : Eviction, send PUTS on VC0, 1 flit, NOT silent
+    S --&gt; I : INV received, send INVACK on VC2
+    E --&gt; I : INV received, send INVACK on VC2
+    M --&gt; I : INV received, send PUTM dirty data then INVACK on VC2
+    I --&gt; I : INV received, send INVACK on VC2, defensive, covers evict during invalidate
+    note right of SM_D
+        SM_D exits on DATA alone. INVACKs go to the directory
+        and never reach the requester, so they cannot be an
+        exit condition here. The SM-D to INV race is closed at
+        source by rule 3, INV excludes the requester.
+    end note
+    note right of I
+        Premise R, receptivity, applies in every state including
+        transients: INV, DATA or INVACK for a DIFFERENT line is
+        serviced immediately on a path independent of the miss
+        path and does not disturb the outstanding miss.
+        At most one outstanding miss per L1, MSHRs are future scope.
+    end note
+    note left of MI_A
+        Any transient: timeout greater than T is an error,
+        assertion A5, directed test 17, orphan-transient
+        detection. T = 150 cycles at 4x4 in regression.
+    end note</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">8</span><h3>LLD-3: Directory Controller FSM + DTR (Appendix B, &#167;3.3, &#167;3.7)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">stateDiagram-v2
+    direction TB
+    [*] --&gt; DIR_I
+    DIR_I --&gt; DIR_MEM_WAIT : GETS, set pending_op GETS, fetch, bank first then tap on miss
+    DIR_I --&gt; DIR_MEM_WAIT : GETM, set pending_op GETM, fetch, bank first then tap on miss
+    DIR_MEM_WAIT --&gt; DIR_MEM_WAIT : MEM_DATA, send DATA to requester, no state change
+    DIR_MEM_WAIT --&gt; DIR_E : UNBLOCK with pending_op GETS, sole clean grant enables silent upgrade
+    DIR_MEM_WAIT --&gt; DIR_M : UNBLOCK with pending_op GETM
+    DIR_S --&gt; DIR_S : GETS, reply DATA from bank, add sharer, no transient
+    DIR_S --&gt; DIR_INV_WAIT : GETM from T, clear T bit, send INV to sharers except T
+    DIR_INV_WAIT --&gt; DIR_INV_WAIT : INVACK, clear that sharer bit, idempotent
+    DIR_INV_WAIT --&gt; DIR_INV_WAIT : late PUTS from an already INVed tile, bit already clear
+    DIR_INV_WAIT --&gt; DIR_INV_WAIT : Sharers equal 0, send DATA exclusive to requester, no state change
+    DIR_INV_WAIT --&gt; DIR_M : UNBLOCK with owner T, sole exit event
+    DIR_E --&gt; DIR_E : GETS from owner, reply DATA from the home bank
+    DIR_E --&gt; DIR_FWD_WAIT : GETS from other, set pending_op GETS, send FWD_GETS
+    DIR_E --&gt; DIR_FWD_WAIT : GETM from other, set pending_op GETM, send FWD_GETM
+    DIR_E --&gt; DIR_I : PUTS from owner, clear Owner, send PUTACK
+    DIR_M --&gt; DIR_M : GETS from owner, reply DATA, owner is authoritative
+    DIR_M --&gt; DIR_FWD_WAIT : GETS from other, set pending_op GETS, send FWD_GETS
+    DIR_M --&gt; DIR_FWD_WAIT : GETM from other, set pending_op GETM, send FWD_GETM
+    DIR_M --&gt; DIR_I : PUTM from owner, write data into bank, clear Owner, send PUTACK
+    DIR_FWD_WAIT --&gt; DIR_FWD_WAIT : DATAFWD, write dirty data into the bank, send DATA to requester
+    DIR_FWD_WAIT --&gt; DIR_S : UNBLOCK with pending_op GETS
+    DIR_FWD_WAIT --&gt; DIR_M : UNBLOCK with pending_op GETM
+    DIR_S --&gt; DIR_S : PUTS from a sharer, clear that bit, send PUTACK
+    DIR_S --&gt; DIR_I : PUTS from the last sharer, send PUTACK
+    state DIR_EVICT {
+        state &quot;victim shared, INV to sharers&quot; as INV_SHARERS
+        state &quot;victim owned, INV to owner&quot; as RECALL_OWNER
+        state &quot;victim dirty, bank to tap&quot; as WRITE_BACK
+        INV_SHARERS --&gt; INV_SHARERS : INVACK, clear that sharer bit
+        INV_SHARERS --&gt; WRITE_BACK : final INVACK, victim dirty
+        INV_SHARERS --&gt; DIR_MEM_WAIT : final INVACK, victim clean, resolved
+        RECALL_OWNER --&gt; WRITE_BACK : PUTM plus INVACK from owner, victim dirty
+        RECALL_OWNER --&gt; DIR_MEM_WAIT : final INVACK, victim clean, resolved
+        WRITE_BACK --&gt; DIR_MEM_WAIT : bank to tap write committed, proceed with the pending fill
+    }
+    state &quot;entered from ANY state when a fill requires a victim way&quot; as VictimNeeded
+    VictimNeeded --&gt; DIR_EVICT : enter, sub-state chosen by victim directory state
+    note right of DIR_EVICT
+        Eviction sub-states NONE, INV_SHARERS, RECALL_OWNER,
+        WRITE_BACK are held in the DTR 2-bit field, together
+        with evict victim and victim dirty. The 3-bit SRAM
+        state field has zero encoding headroom.
+    end note
+    note left of DIR_FWD_WAIT
+        DIR-FWD-WAIT with UNBLOCK has two legal successors;
+        DTR pending_op selects DIR-S for GETS or DIR-M for GETM,
+        so the transition function is a function.
+        Single-exit rule: MEM_DATA, DATAFWD, INVACK and PUTM
+        advance DTR progress only and never change the SRAM
+        state field on their own.
+    end note</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">9</span><h3>LLD-4: NIC Datapath (&#167;3.1, &#167;3.3, &#167;3.5, &#167;3.8)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart LR
+    subgraph TX[&quot;Transmit path&quot;]
+        direction TB
+        REQ_IN[&quot;Requests from local L1 or DMA L1-lite&lt;br/&gt;GETS, GETM, PUTS, PUTM, UNBLOCK, INVACK, DATAFWD&quot;]
+        PKT[&quot;Packetiser: build header flit&lt;br/&gt;dest 63:56, src 55:48, msg 47:44, VC 43:42, head 41, tail 40,&lt;br/&gt;WE 39, exclusive 38, LEN 37:32, address 31:0&quot;]
+        C2VC[&quot;Class to VC assignment at the source - never changed downstream&lt;br/&gt;REQ to VC0, FWD to VC1, RESP to VC2, INV to VC3&quot;]
+        TXF[&quot;TX FIFO, depth 4 per VC&lt;br/&gt;LEN set to 1 for control, 9 for PUTM&quot;]
+        CRED[&quot;Credit gate: send only when a credit for the downstream&lt;br/&gt;FIFO of the chosen VC is available&quot;]
+        REQ_IN --&gt; PKT --&gt; C2VC --&gt; TXF --&gt; CRED
+    end
+    LOC[&quot;Router LOCAL port&quot;]
+    subgraph RX[&quot;Receive path&quot;]
+        direction TB
+        RXF[&quot;RX FIFO, depth 4 per VC&quot;]
+        DEC[&quot;Message type decoder 47:44&quot;]
+        TO_DIR[&quot;To local L2 directory controller&lt;br/&gt;GETS, GETM, PUTS, PUTM, UNBLOCK, INVACK, DATAFWD&lt;br/&gt;these are the messages whose direction is to the home directory&quot;]
+        TO_L1[&quot;To local L1 or DMA register file&lt;br/&gt;INV, FWD_GETS, FWD_GETM, DATA, PUTACK, DMA_ACK&lt;br/&gt;these are the messages whose direction is to a holder&quot;]
+        RXF --&gt; DEC
+        DEC --&gt; TO_DIR
+        DEC --&gt; TO_L1
+    end
+    CRED --&gt; LOC
+    LOC --&gt; RXF
+    TO_DIR --&gt; MUX_OUT[&quot;Intra-tile mux, message-type routing&quot;]
+    TO_L1 --&gt; MUX_OUT
+    CHK[&quot;Checked field: header VC 43:42 must equal class of msg 47:44.&lt;br/&gt;Asserted by the NIC and by formal invariant I3.&lt;br/&gt;Never used as a routing input.&quot;]
+    LEN[&quot;Wormhole framing: the router counts flits against header LEN 37:32&lt;br/&gt;and releases the output when the count completes.&lt;br/&gt;Body flits are pure payload, no control bits.&quot;]
+    LOC --- CHK
+    LOC --- LEN</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">10</span><h3>LLD-5: Intra-tile Request Path and L2 Bank Access (&#167;3.1, &#167;3.7, rulings R1–R3)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph SRC[&quot;Request sources - all queue, ruling R2&quot;]
+        direction LR
+        S1[&quot;Local L1 miss on a line homed at this tile&lt;br/&gt;arrives via the intra-tile mux, no NoC traversal - R1&quot;]
+        S2[&quot;Remote NoC request&lt;br/&gt;GETS, GETM, PUTS, PUTM, DMA_WRITE from the NIC RX path&quot;]
+        S3[&quot;Controller-internal traffic&lt;br/&gt;DIR_MEM_WAIT fill read, DIR-EVICT WRITE_BACK bank to tap&quot;]
+    end
+    Q[&quot;Pending request handling per bank&lt;br/&gt;queue depth and service order: NOT SPECIFIED IN WP&quot;]
+    ARB[&quot;Bank arbiter - single logical access at a time&lt;br/&gt;one outstanding directory transaction per bank - WP 3.7&quot;]
+    CTRL[&quot;Directory controller + DTR&quot;]
+    subgraph ARRAYS[&quot;Serialized bank resources&quot;]
+        direction TB
+        DARR2[&quot;Directory array, 32 entries x 24 b used, padded to 32 b&quot;]
+        TAGD[&quot;L2 tag array, 32 entries x 19 b stored tag&quot;]
+        DATAD[&quot;L2 data array, 32 lines x 64 B&quot;]
+        DARR2 --- TAGD --- DATAD
+    end
+    TAP2[&quot;Memory tap, 1 cycle&quot;]
+    S1 --&gt; Q
+    S2 --&gt; Q
+    S3 --&gt; Q
+    Q --&gt; ARB --&gt; CTRL
+    CTRL --&gt; ARRAYS
+    HITPATH[&quot;Bank tag hit: line served from the L2 data array.&lt;br/&gt;PUTM and DATAFWD write dirty data into the bank here.&quot;]
+    MISSPATH[&quot;Bank tag miss during DIR_MEM_WAIT: read the tap,&lt;br/&gt;install the line into the victim way, DIR-EVICT first if the&lt;br/&gt;victim is valid - the fill always installs, otherwise the&lt;br/&gt;inclusion policy of WP 3.2 would be violated.&quot;]
+    STALE[&quot;While DIR_M with a dirty owner, the bank copy is stale:&lt;br/&gt;the owner&#39;s L1 is the only current copy - WP 3.2.&quot;]
+    ARRAYS --- HITPATH
+    ARRAYS --- MISSPATH
+    TAP2 --- MISSPATH
+    TAP2 --- STALE
+    CTRL &lt;--&gt;|&quot;DIR-EVICT WRITE_BACK: read bank, write tap - ruling R3&quot;| TAP2</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">11</span><h3>LLD-6: Memory Tap (&#167;3.9, ruling R4)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph TAP[&quot;Memory tap - per CPU tile, not shared, simulation model&quot;]
+        direction TB
+        MEM[&quot;Behavioural backing store&lt;br/&gt;32-bit physical address, 256 MB window at 0x0000_0000, sparse beyond&lt;br/&gt;64 B per line, access latency 1 cycle&quot;]
+        RPORT[&quot;Fill port: answers cold misses of its own L2 bank&lt;br/&gt;DIR_MEM_WAIT reads the bank first, tap only on bank miss - ruling R3&quot;]
+        WPORT[&quot;Write-back port: DIR-EVICT WRITE_BACK, bank to tap, 1 cycle&quot;]
+        MEM --- RPORT
+        MEM --- WPORT
+    end
+    BANK2[&quot;Local L2 bank controller&quot;]
+    RPORT &lt;--&gt; BANK2
+    WPORT &lt;--&gt; BANK2
+    SCOPE[&quot;Serves only addresses homed at this tile.&lt;br/&gt;Serves the home slice only. Coherence participation: NONE -&lt;br/&gt;the backing store does not participate, the directory does.&quot;]
+    REGIONS[&quot;Address regions: memory 0x0000_0000 to 0x0FFF_FFFF,&lt;br/&gt;unmapped 0x1000_0000 to 0xEFFF_FFFF caught by A8,&lt;br/&gt;DMA registers 0xF000_0000 to 0xF000_FFFF gated,&lt;br/&gt;test addresses 0xFFFF_FF00 / FF04 / FF08 return DEADBEEF / the address / a counter.&quot;]
+    WARN[&quot;NOT SPECIFIED IN WP, flagged per ruling R4:&lt;br/&gt;the legacy sentence that the tap also passes non-memory packets&lt;br/&gt;to and from the NIC is treated as superseded wording.&lt;br/&gt;The NIC connects directly to the router LOCAL port instead.&quot;]
+    NOTMODEL[&quot;Not modelled, future scope: DRAM timing, ECC, refresh,&lt;br/&gt;bank interleaving, prefetch. Replaced by a real controller per WP 9.&quot;]
+    TAP --- SCOPE
+    TAP --- REGIONS
+    TAP --- WARN
+    TAP --- NOTMODEL</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">12</span><h3>LLD-7: Address Decode and Stored-Tag Decomposition, 4&#215;4 (&#167;3.6)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph ADDR[&quot;Physical address 31:0 - 4x4 configuration&quot;]
+        direction LR
+        B1[&quot;31:15 - L2 tag field, 17 b&quot;]
+        B2[&quot;14:11 - home tile X,Y, 4 b&quot;]
+        B3[&quot;10:8 - L2 set index, 3 b&quot;]
+        B4[&quot;7:6 - L1 set index, 2 b&quot;]
+        B5[&quot;5:0 - byte offset, 6 b&quot;]
+        B1 --- B2 --- B3 --- B4 --- B5
+    end
+    DISJ[&quot;The L1 set index 7:6 and the L2 set index 10:8 are DISJOINT - hard requirement.&lt;br/&gt;With an overlapping layout only 2 of 8 L2 sets are reachable per L1 set,&lt;br/&gt;so one L1 set would be backed by 512 B, less than the 1 KB L1 itself.&quot;]
+    subgraph STORED[&quot;Stored tag widths&quot;]
+        direction TB
+        L1T[&quot;L1, every tile: index 7:6, stored tag addr 31:8 = 24 b&quot;]
+        L2T[&quot;L2, per bank: index 10:8, home bits constant per bank and excluded.&lt;br/&gt;Stored tag = addr 31:15 concatenated with addr 7:6 = 19 b, NON-CONTIGUOUS.&lt;br/&gt;The 7:6 bits must be compared: storing 31:15 alone would alias lines&lt;br/&gt;differing only in 7:6 into the same way.&quot;]
+        L1T --- L2T
+    end
+    HOME[&quot;Home decode is closed-form, zero logic, contiguous address slice per tile.&lt;br/&gt;The bit order of X and Y inside the 4-bit home field is NOT SPECIFIED IN WP.&quot;]
+    SCALE[&quot;Full-map sharer vector: 1 bit per tile, so 24 b used at 16 tiles, 74 b at 64 tiles.&lt;br/&gt;A flat single-level directory is optimal only up to 16 tiles: N is bounded at 16.&lt;br/&gt;The 8-bit tile-ID fields do not extend that bound.&quot;]
+    DMARES[&quot;DMA-enabled build: the DMA slot has no directory, so its home code is&lt;br/&gt;reserved and unmapped. Requests decoding to it are a protocol error, A8.4.&lt;br/&gt;Costs 1/16 of the decode space.&quot;]
+    ADDR --- DISJ
+    STORED --- HOME
+    STORED --- SCALE
+    STORED --- DMARES</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">13</span><h3>LLD-8: Header Flit Map and Packet Framing (&#167;3.8, Appendix C)</h3><span class="file">HLD_LLD_4x4_architecture.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph HDR[&quot;Header flit, 64 bits&quot;]
+        direction TB
+        F1[&quot;63:56 - dest tile, 8 b, logical TILE_ID_W, unused high bits zero&quot;]
+        F2[&quot;55:48 - src tile, 8 b&quot;]
+        F3[&quot;47:44 - msg type, 4 b, 12 core codes plus 2 gated, 1110 and 1111 reserved&quot;]
+        F4[&quot;43:42 - VC ID, 2 b, CHECKED field, must equal class of msg, never a routing input&quot;]
+        F5[&quot;41 - head, 40 - tail, set only on single-flit packets&quot;]
+        F6[&quot;39 - write enable, 38 - exclusive indication&quot;]
+        F7[&quot;37:32 - LEN, 6 b, total flits in the packet, 1 to 63&quot;]
+        F8[&quot;31:0 - address, line address of the transaction&quot;]
+        F1 --- F2 --- F3 --- F4 --- F5 --- F6 --- F7 --- F8
+    end
+    BODY[&quot;Body flit: 64 bits of pure payload, no control bits.&lt;br/&gt;The packet is delimited by the header LEN count, so body flits keep&lt;br/&gt;100 percent payload bandwidth.&quot;]
+    SIZES[&quot;Packet sizes: control = 1 flit, GETS, GETM, PUTS, UNBLOCK, INV, INVACK,&lt;br/&gt;FWD-GETS, FWD-GETM, PUTACK, DMA-ACK.&lt;br/&gt;Cache line = 9 flits, PUTM, DATA, DATAFWD, DMA-WRITE.&lt;br/&gt;All coherence transfers are single-cache-line granularity.&quot;]
+    HDR --- BODY
+    HDR --- SIZES</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">14</span><h3>HLD-F1: 2&#215;2 Mesh (FPGA emulation + formal configuration)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph MESH22[&quot;2x2 mesh - 4 identical CPU tiles - committed FPGA target and formal configuration&quot;]
+        direction TB
+        subgraph ROW0[&quot;mesh row Y0&quot;]
+            direction LR
+            Q00[&quot;position 0,0&lt;br/&gt;CPU tile, corner&lt;br/&gt;5-port module, 3 ports active&quot;] ~~~ Q01[&quot;position 1,0&lt;br/&gt;CPU tile, corner&lt;br/&gt;5-port module, 3 ports active&quot;]
+        end
+        subgraph ROW1[&quot;mesh row Y1&quot;]
+            direction LR
+            Q10[&quot;position 0,1&lt;br/&gt;CPU tile, corner&lt;br/&gt;5-port module, 3 ports active&quot;] ~~~ Q11[&quot;position 1,1&lt;br/&gt;CPU tile, corner&lt;br/&gt;5-port module, 3 ports active&quot;]
+        end
+        Q00 &lt;--&gt; Q01
+        Q10 &lt;--&gt; Q11
+        Q00 &lt;--&gt; Q10
+        Q01 &lt;--&gt; Q11
+    end
+    SAME[&quot;Each CPU tile is internally IDENTICAL to the 4x4 CPU tile of&lt;br/&gt;HLD-2 in HLD_LLD_4x4_architecture.md: same eight blocks, same&lt;br/&gt;direct local-miss path, single serialized bank port, NIC to router direct.&quot;]
+    SAMEPORT[&quot;NOT limited to 2 links: the router is ONE 5-port module (LOCAL, N, S, E, W)&lt;br/&gt;instantiated at every tile position, here too. Only 2 of the 4 mesh ports are&lt;br/&gt;active at a 2x2 corner; the unused 2 are tied off and pruned by synthesis.&lt;br/&gt;The same RTL scales to any N x N, bounded at N &lt;= 16 by the directory.&lt;br/&gt;2x2 is the FPGA emulation choice, not an architectural limit.&quot;]
+    WRITEPOL[&quot;Write policy - L1 and L2 both WRITE-BACK.&lt;br/&gt;L1: write-back, write-allocate - WP 3.2.&lt;br/&gt;L2 bank: write-back, write-allocate - WP 3.2.&lt;br/&gt;Write-through would send a coherence transaction per store and would&lt;br/&gt;make the silent E to M upgrade impossible - WP 4.4.&quot;]
+    HOP[&quot;Worst-case Manhattan distance: 2 hops - WP 5.3.&lt;br/&gt;Router pipeline 4 cycles per hop.&quot;]
+    HOME2[&quot;Address map: home tile is 2 bits at addr 12:11, tag at 31:13,&lt;br/&gt;L2 set at 10:8, L1 set at 7:6 - L1 and L2 indices remain disjoint.&quot;]
+    NOTCOV[&quot;Formal coverage boundary, disclosed - WP 5.3:&lt;br/&gt;all 2x2 tiles are corners, so the interior 5-port router case is NOT covered,&lt;br/&gt;and 3 or more sharers at distinct homes are NOT covered.&lt;br/&gt;Both are deferred to the 4x4 simulation campaign, not claimed equivalent.&quot;]
+    DMA22[&quot;DMA device tile at 2x2: the WP states the DMA slot arithmetic only for&lt;br/&gt;4x4 (15+1, 30 KB, one reserved home code) - WP 3.11.&lt;br/&gt;A 2x2 DMA configuration is NOT SPECIFIED IN WP.&quot;]
+    MESH22 --- SAME
+    MESH22 --- SAMEPORT
+    MESH22 --- WRITEPOL
+    MESH22 --- HOP
+    MESH22 --- HOME2
+    MESH22 --- NOTCOV
+    MESH22 --- DMA22</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">15</span><h3>HLD-F2: FPGA Top Level, ZedBoard XC7Z020 (&#167;6.1, &#167;6.4, &#167;9)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    CLK[&quot;Clock: 100 MHz, 10 ns period - WP 6.1 / 6.4&quot;]
+    RST[&quot;Reset synchroniser&lt;br/&gt;false path declared in the XDC&quot;]
+    subgraph TOP[&quot;fpga_top - XC7Z020-CLG484-1&quot;]
+        direction TB
+        CHIP[&quot;2x2 mesh, 4 CPU tiles&lt;br/&gt;LUT ceiling 40 000, target at or below 20 000 of 53 200&lt;br/&gt;FF target at or below 25 000 of 106 400&lt;br/&gt;BRAM36 28 to 80 of 140, DSP 0&quot;]
+        STIM[&quot;Core / stimulus interface - master port for load, store, flush&lt;br/&gt;The on-board stimulus SOURCE (host bridge, VIO, or free-running generator)&lt;br/&gt;is NOT SPECIFIED IN WP. ILA/VIO debug infrastructure is listed as&lt;br/&gt;future scope in WP 9.&quot;]
+        CHIP --- STIM
+    end
+    CLK --&gt; TOP
+    RST --&gt; TOP
+    BITS[&quot;Bitstream deliverable - milestone 9, Week 14.&lt;br/&gt;Power at or below 50 mW, Xilinx Power Estimator pre-synthesis,&lt;br/&gt;report_power post-implementation.&quot;]
+    FALLBACK[&quot;Fallback order if fit or timing fails - WP 6.1:&lt;br/&gt;reduce cache associativity or set count, map tag/state arrays to LUTRAM,&lt;br/&gt;pipeline the router crossbar, reduce FPGA tile count.&lt;br/&gt;The VC count is FROZEN at 4 and is never a fallback variable.&quot;]
+    TOP --- BITS
+    TOP --- FALLBACK</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">16</span><h3>HLD-F3: Formal Verification Configuration, 2&#215;2 (&#167;5.3, Appendix E)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    MODEL[&quot;Formal model: the 2x2 mesh, 4 tiles&lt;br/&gt;minimum that exercises a multi-sharer fan-out of 2 sharers plus 1 requester&lt;br/&gt;and the 2-bit home decode - WP 5.3&quot;]
+    subgraph PROPS[&quot;Property set&quot;]
+        direction TB
+        SAFE[&quot;Safety, BMC proved: A1.1 to A1.5, A2.1 to A2.7, A3, A4, A6, A7, A8&lt;br/&gt;= 38 bound safety assertions&quot;]
+        LIVE2[&quot;Bounded liveness: no orphan transient and no message loss,&lt;br/&gt;each within T = 64 cycles, under Premise F&lt;br/&gt;derivation 5 traversals x 2 hops x 4 cycles = 40 fabric + up to 24 overhead&quot;]
+        DEAD2[&quot;Deadlock lemma of WP 4.6 - premises confirmed by k-induction at k = 16:&lt;br/&gt;VC index preserved, inter-class edges ascend, credit invariant holds&quot;]
+        INV2[&quot;Formal-only network invariants I1 to I7 - NOT part of the 42 bound SVA&lt;br/&gt;XY path, VC equals class, credit invariant, no send at zero credit,&lt;br/&gt;per-VC FIFO ordering, delivery or protocol termination&quot;]
+        SAFE --- LIVE2
+        DEAD2 --- INV2
+    end
+    ENGINES[&quot;Engines: mode bmc, depth K = 64, at least 2x the bound T,&lt;br/&gt;plus mode prove, k-induction, as the primary engine where tractable.&lt;br/&gt;A BMC depth below T would be unsound - a full remote transaction could not&lt;br/&gt;complete and every liveness property would pass vacuously.&quot;]
+    BOUNDARY[&quot;Coverage boundary, disclosed not hidden - WP 5.3 table:&lt;br/&gt;covered at 2x2: single-sharer invalidation, single-owner forward,&lt;br/&gt;silent E to M upgrade, multi-sharer fan-out, DIR-M with two concurrent GETS,&lt;br/&gt;two distinct home tiles.&lt;br/&gt;NOT covered: interior 5-port router, 9 tiles minimum; 3 or more sharers at&lt;br/&gt;distinct homes simultaneously - both deferred to 4x4 simulation.&quot;]
+    OPEN[&quot;NOT SPECIFIED IN WP: the RTL mechanism that counts T for orphan-transient&lt;br/&gt;detection is open item 7, Week 10. The age-escape threshold of 8 rounds is&lt;br/&gt;open item 8, to be confirmed against measured VC load.&quot;]
+    MODEL --&gt; PROPS --&gt; ENGINES
+    PROPS --- BOUNDARY
+    PROPS --- OPEN</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">17</span><h3>LLD-F1: 2&#215;2 Parameter Deltas vs 4&#215;4 (&#167;3.2, &#167;3.6, &#167;5.3, &#167;13)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph W[&quot;Widths that CHANGE at 2x2&quot;]
+        direction TB
+        TC[&quot;TILE_COUNT = 4&quot;]
+        IDW[&quot;TILE_ID_W = ceil(log2 4) = 2&lt;br/&gt;logical width of dest and src header fields&lt;br/&gt;the 8-bit header fields 63:56 and 55:48 stay as reserved-width fields with unused high bits zero&quot;]
+        SH[&quot;SHARER_W = 4 - full-map vector, bit t equals 1 iff tile t holds a shared copy&quot;]
+        DE[&quot;Directory entry: 3 + 2 + 4 + 1 = 10 bits USED,&lt;br/&gt;stored padded to 32 bits for BRAM alignment - WP 6.1 per-tile table&quot;]
+        TAG[&quot;Stored L2 tag = addr 31:13 concatenated with addr 7:6 = 21 bits,&lt;br/&gt;still non-contiguous - WP 3.6&quot;]
+        HM[&quot;Home field at addr 12:11, 2 bits; L2 tag field at addr 31:13, 19 bits.&lt;br/&gt;L2 set 10:8 and L1 set 7:6 are unchanged and remain disjoint.&quot;]
+        TC --- IDW --- SH --- DE --- TAG --- HM
+    end
+    subgraph S[&quot;Structures that DO NOT change&quot;]
+        direction TB
+        L1G[&quot;L1: 4 sets x 4 ways x 64 B = 1 KB, tree-PLRU 3 b per set&quot;]
+        L2G[&quot;L2 bank: 8 sets x 4 ways x 64 B = 2 KB, tree-PLRU 3 b per set&quot;]
+        MSG[&quot;Message set: 12 core plus 2 gated, codes 0000 to 1101, 1110/1111 reserved&quot;]
+        VCS[&quot;4 VCs, depth 4 each, credit counters 4-bit init 4, VC count frozen&quot;]
+        FSM[&quot;L1 and directory FSMs: identical to the 4x4 diagrams&lt;br/&gt;LLD-2 and LLD-3 in HLD_LLD_4x4_architecture.md - only widths differ&quot;]
+        FLIT[&quot;64-bit flit, header map and LEN framing: identical - LLD-8, 4x4 file&quot;]
+        L1G --- L2G --- MSG --- VCS --- FSM --- FLIT
+    end
+    LAT[&quot;Latency constants at 2x2: worst Manhattan distance 2 hops,&lt;br/&gt;router pipeline 4 cycles per hop, formal bound T = 64 cycles.&lt;br/&gt;The 4x4 simulation bound is T = 150 cycles at 6 hops.&quot;]
+    W --- LAT
+    S --- LAT</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">18</span><h3>LLD-F2: Resource Budget, 2&#215;2 (&#167;6.1)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph TILE[&quot;Per CPU tile - BRAM36&quot;]
+        direction TB
+        B_L1D[&quot;L1 data, 16 lines x 64 B: 1 to 4&quot;]
+        B_L1T[&quot;L1 tag, 16 x 24 b: 0 to 1, LUTRAM capable&quot;]
+        B_L2D[&quot;L2 data, 32 lines x 64 B: 1 to 8&quot;]
+        B_L2T[&quot;L2 tag, 32 x 21 b stored at 2x2: 0 to 1, LUTRAM capable&quot;]
+        B_DIR[&quot;Directory, 32 x 32 b: 1&quot;]
+        B_RF[&quot;Router input FIFOs, 5 ports x 4 VCs x 4 x 64 b: 3&quot;]
+        B_NIC[&quot;NIC FIFOs: 1 to 2&quot;]
+        B_LRU[&quot;LRU state: registers, 0&quot;]
+        B_TOT[&quot;Total per CPU tile: 7 to 20 BRAM36&quot;]
+        B_L1D --- B_L1T --- B_L2D --- B_L2T --- B_DIR --- B_RF --- B_NIC --- B_LRU --- B_TOT
+    end
+    subgraph CFG[&quot;Per configuration - BRAM36&quot;]
+        direction TB
+        C_FAV[&quot;2x2, 4 CPU tiles, favourable array mapping: 28&quot;]
+        C_CON[&quot;2x2, 4 CPU tiles, conservative array mapping: 80&quot;]
+        C_44[&quot;reference only, 4x4, 16 CPU tiles: 112 to 320 - exceeds the device&quot;]
+        C_FAV --- C_CON --- C_44
+    end
+    subgraph LUTS[&quot;LUT and FF budget&quot;]
+        direction TB
+        L_R[&quot;Router about 2200 to 2500 LUTs&lt;br/&gt;5x5 crossbar about 1600, VC allocation and arbitration about 400, control about 200&quot;]
+        L_C[&quot;L1, L2 and directory controller about 700 per tile&quot;]
+        L_N[&quot;NIC about 300 per tile&quot;]
+        L_T[&quot;2x2 total about 13000 to 19000 LUTs, 25 to 36 percent of 53200&quot;]
+        L_R --- L_C --- L_N --- L_T
+    end
+    DEV[&quot;Device: XC7Z020 - 53200 LUT, 106400 FF, 140 BRAM36 about 630 KB, 220 DSP.&lt;br/&gt;Ceilings: LUT at or below 40000, FF at or below 50000, BRAM at or below 70, DSP 0.&lt;br/&gt;BRAM is NOT a constraint at 2x2, 28 to 80 of 140 - WP 6.1.&quot;]
+    BRAMRULE[&quot;BRAM36 configures as 1024x36 or 512x72, so a 2 KB bank of 32 lines x 64 B&lt;br/&gt;is 1 BRAM36 with one 64-bit port, 4 with four parallel way ports, or 8 for a&lt;br/&gt;full 512-bit line read. The inherited 15-BRAM-per-bank figure is an&lt;br/&gt;arithmetic error, WP 6.1 and WP 13 item R.&quot;]
+    TILE --- DEV
+    CFG --- DEV
+    LUTS --- DEV
+    CFG --- BRAMRULE</pre>
+  </div>
+  <div class="card">
+    <div class="cardhead"><span class="num">19</span><h3>LLD-F3: Timing Constraint Set and Critical Paths, XDC Content (&#167;6.4)</h3><span class="file">HLD_LLD_2x2_FPGA.md</span></div>
+    <pre class="mermaid">flowchart TB
+    subgraph CON[&quot;Constraints - XDC is a named deliverable, milestone 10, Week 14&quot;]
+        direction TB
+        T_CLK[&quot;Clock: 10 ns, 100 MHz&quot;]
+        T_SU[&quot;Setup uncertainty: 0.2 ns&quot;]
+        T_HD[&quot;Hold uncertainty: 0.1 ns&quot;]
+        T_IO[&quot;I/O delay: 2.0 ns max, 0.5 ns min&quot;]
+        T_FP[&quot;Reset synchroniser: false path declared&quot;]
+        T_RETIMING[&quot;Retiming enabled except on the reset synchroniser,&lt;br/&gt;handshake paths and state registers&quot;]
+        T_CLK --- T_SU --- T_HD --- T_IO --- T_FP --- T_RETIMING
+    end
+    subgraph TARGETS[&quot;Sign-off targets&quot;]
+        direction TB
+        G_WNS[&quot;WNS at or above 0 ns&quot;]
+        G_WHS[&quot;WHS at or above 0 ns&quot;]
+        G_WPWS[&quot;WPWS at or above 3.750 ns&quot;]
+        G_TNS[&quot;TNS equals 0&quot;]
+        G_FAIL[&quot;Failing endpoints equals 0&quot;]
+        G_WNS --- G_WHS --- G_WPWS --- G_TNS --- G_FAIL
+    end
+    subgraph CRIT[&quot;Known critical paths and mitigations - WP 6.4&quot;]
+        direction TB
+        K1[&quot;1 L2 tag compare to directory state decision&lt;br/&gt;mitigation: split tag compare and directory lookup into separate pipeline stages&quot;]
+        K2[&quot;2 Router arbitration to crossbar output&lt;br/&gt;mitigation: the 4-stage pipeline RC VA SA ST already separates arbitration from traversal&quot;]
+        K3[&quot;3 NIC packet decode to cache interface&lt;br/&gt;mitigation: register the decoder output&quot;]
+        K1 --- K2 --- K3
+    end
+    RISK[&quot;Risks named in WP 7.3: timing closure failure at 100 MHz is Medium probability&lt;br/&gt;with mitigations reduce cache size, LUTRAM mapping, an additional router pipeline&lt;br/&gt;stage, floorplanning.&lt;br/&gt;Open item 4: router pipeline depth 3 vs 4 stages closes at RTL freeze, Week 4.&quot;]
+    CON --&gt; TARGETS
+    CON --- CRIT
+    CON --- RISK</pre>
+  </div>
+</main>
+<footer>Generated by build_diagrams_html.ps1 &mdash; render offline via vendored mermaid.min.js</footer>
+</body>
+<script src="mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: 'neutral',
+    flowchart: { htmlLabels: true, curve: 'basis' }, themeVariables: { fontSize: '13px' } });
+</script>
+</html>

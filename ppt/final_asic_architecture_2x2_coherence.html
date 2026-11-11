@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Low-Level Design — Per-Tile Coherence Datapath (2×2 Implementation)</title>
+<style>:root{--bg:#F4F6F8;--paper:#fff;--ink:#1F2A37;--muted:#5B6B7C;--line:#D6DEE6}
+*{box-sizing:border-box}body{margin:0;padding:28px 20px 56px;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+.c{max-width:1400px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px 30px;box-shadow:0 2px 8px rgba(20,30,40,.06)}
+h1{font-size:22px;margin:0 0 6px}.s{font-size:13.5px;color:var(--muted);margin:0 0 16px}svg{width:100%;height:auto;display:block}
+.l{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.l span{display:inline-flex;align-items:center;gap:8px}.w{width:14px;height:14px;border-radius:3px;border:1.5px solid}
+@media print{body{background:#fff;padding:0}.c{border:none;box-shadow:none}}</style></head><body><div class="c">
+<h1>Low-Level Design — Per-Tile Coherence Datapath (2×2 Implementation)</h1>
+<p class="s">One CPU tile, replicated ×4 · full-map MESI directory in every home bank · datapath, directory and NIC encodings, transient-state exits, and the worst-case remote GETM sequence · whitepaper v3.0 §3.2–§3.8, §5.3.</p>
+<svg viewBox="0 0 1420 724" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Per-tile coherence datapath with directory entry, VC mapping, transient states and remote GETM sequence">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#455A64"/></marker>
+<marker id="ard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#E65100"/></marker>
+<marker id="mk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#263238"/></marker>
+</defs>
+<g font-family="-apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+
+<text x="32" y="26" font-size="14" font-weight="700" fill="#37474F">LLD ① · Coherence datapath — one CPU tile, replicated ×4 (2×2: every tile is a corner tile)</text>
+
+<!-- ================= ROW 1: CORE / L1 / MUX / NIC / ROUTER ================= -->
+<rect x="32" y="46" width="200" height="132" rx="8" fill="#E3EEFF" stroke="#5B8FF9" stroke-width="2"/>
+<text x="132" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#2C5AA0">CORE / STIMULUS</text>
+<text x="132" y="94" text-anchor="middle" font-size="10.5" fill="#37474F">load · store · flush</text>
+<text x="132" y="111" text-anchor="middle" font-size="10.5" font-weight="600" fill="#B23B00">no fence / atomic</text>
+<text x="132" y="137" text-anchor="middle" font-size="9.5" fill="#455A64">1 outstanding miss</text>
+<text x="132" y="154" text-anchor="middle" font-size="9" fill="#5B6B7C">MSHRs are future scope</text>
+<line x1="232" y1="112" x2="262" y2="112" stroke="#455A64" stroke-width="1.8" marker-end="url(#ar)"/>
+
+<rect x="262" y="46" width="250" height="132" rx="8" fill="#E0FBF0" stroke="#3DC98E" stroke-width="2"/>
+<text x="387" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#1F7A54">L1 CACHE · private</text>
+<rect x="272" y="78" width="72" height="68" rx="5" fill="#FFFFFF" stroke="#3DC98E" stroke-width="1.2"/>
+<text x="308" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#1F7A54">TAG</text>
+<text x="308" y="113" text-anchor="middle" font-size="9" fill="#455A64">4 × 4</text>
+<text x="308" y="130" text-anchor="middle" font-size="9" fill="#455A64">24 b</text>
+<rect x="350" y="78" width="72" height="68" rx="5" fill="#FFFFFF" stroke="#3DC98E" stroke-width="1.2"/>
+<text x="386" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#1F7A54">DATA</text>
+<text x="386" y="113" text-anchor="middle" font-size="9" fill="#455A64">1 KB</text>
+<text x="386" y="130" text-anchor="middle" font-size="9" fill="#455A64">16 × 64 B</text>
+<rect x="428" y="78" width="74" height="68" rx="5" fill="#FFFFFF" stroke="#3DC98E" stroke-width="1.2"/>
+<text x="465" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#1F7A54">CTRL</text>
+<text x="465" y="113" text-anchor="middle" font-size="9" fill="#455A64">MESI FSM</text>
+<text x="465" y="130" text-anchor="middle" font-size="9" fill="#455A64">tree-PLRU</text>
+<text x="387" y="164" text-anchor="middle" font-size="9" fill="#5B6B7C">clean PUTS / dirty PUTM on eviction</text>
+
+<path d="M512 112 H542" stroke="#455A64" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+
+<rect x="542" y="46" width="200" height="132" rx="8" fill="#FFF6DC" stroke="#E5A800" stroke-width="2"/>
+<text x="642" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#8A6500">INTRA-TILE MUX</text>
+<text x="642" y="92" text-anchor="middle" font-size="9.5" fill="#455A64">message-type routing</text>
+<text x="642" y="110" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1B5E20">local ⇄ home dir (R1)</text>
+<text x="642" y="126" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1B5E20">remote ⇄ NIC</text>
+<text x="642" y="145" text-anchor="middle" font-size="9" fill="#455A64">requests · evictions · responses</text>
+<text x="642" y="162" text-anchor="middle" font-size="8.5" fill="#5B6B7C">no NoC traversal on a local miss</text>
+
+<path d="M742 112 H772" stroke="#455A64" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+
+<rect x="772" y="46" width="240" height="132" rx="8" fill="#EFE6FF" stroke="#7E57C2" stroke-width="2"/>
+<text x="892" y="64" text-anchor="middle" font-size="12.5" font-weight="700" fill="#4A2F8F">NIC · packetise / decode</text>
+<rect x="782" y="74" width="220" height="44" rx="5" fill="#FFFFFF" stroke="#7E57C2" stroke-width="1.2"/>
+<text x="892" y="90" text-anchor="middle" font-size="9.5" font-weight="700" fill="#4A2F8F">TX · class → VC</text>
+<text x="892" y="107" text-anchor="middle" font-size="8.5" fill="#455A64">TX FIFO 4/VC · credit gate · LEN</text>
+<rect x="782" y="124" width="220" height="44" rx="5" fill="#FFFFFF" stroke="#7E57C2" stroke-width="1.2"/>
+<text x="892" y="140" text-anchor="middle" font-size="9.5" font-weight="700" fill="#4A2F8F">RX · decode + VC check</text>
+<text x="892" y="157" text-anchor="middle" font-size="8.5" fill="#455A64">→ MUX · home dir vs holder</text>
+
+<path d="M1012 112 H1042" stroke="#455A64" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="1027" y="103" text-anchor="middle" font-size="8" font-weight="700" fill="#B23B00">R4</text>
+
+<rect x="1042" y="46" width="240" height="132" rx="8" fill="#FFE5E5" stroke="#E53935" stroke-width="2"/>
+<text x="1162" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="#A02020">ROUTER · 5-port XY</text>
+<text x="1162" y="82" text-anchor="middle" font-size="8.5" fill="#455A64">3 active ports at 2×2 (corner)</text>
+<rect x="1064" y="90" width="44" height="24" rx="4" fill="#FFFFFF" stroke="#E53935" stroke-width="1.2"/>
+<text x="1086" y="107" text-anchor="middle" font-size="9.5" font-weight="700" fill="#A02020">RC</text>
+<rect x="1114" y="90" width="44" height="24" rx="4" fill="#FFFFFF" stroke="#E53935" stroke-width="1.2"/>
+<text x="1136" y="107" text-anchor="middle" font-size="9.5" font-weight="700" fill="#A02020">VA</text>
+<rect x="1164" y="90" width="44" height="24" rx="4" fill="#FFFFFF" stroke="#E53935" stroke-width="1.2"/>
+<text x="1186" y="107" text-anchor="middle" font-size="9.5" font-weight="700" fill="#A02020">SA</text>
+<rect x="1214" y="90" width="44" height="24" rx="4" fill="#FFFFFF" stroke="#E53935" stroke-width="1.2"/>
+<text x="1236" y="107" text-anchor="middle" font-size="9.5" font-weight="700" fill="#A02020">ST</text>
+<text x="1162" y="131" text-anchor="middle" font-size="9" fill="#455A64">4 VCs × 4 flits / port</text>
+<text x="1162" y="147" text-anchor="middle" font-size="9" fill="#455A64">credit 3 b · age escape ≥ 8</text>
+<text x="1162" y="163" text-anchor="middle" font-size="9" fill="#455A64">XY · VC preserved end-to-end</text>
+
+<line x1="1282" y1="112" x2="1318" y2="112" stroke="#263238" stroke-width="3" marker-end="url(#mk)"/>
+<rect x="1322" y="92" width="66" height="40" rx="6" fill="#ECEFF1" stroke="#263238" stroke-width="1.4"/>
+<text x="1355" y="108" text-anchor="middle" font-size="9" font-weight="700" fill="#263238">MESH</text>
+<text x="1355" y="122" text-anchor="middle" font-size="8" fill="#263238">2 links</text>
+
+<!-- ================= ROW 2: DIR / DIR ARRAY / DETAIL PANEL ================= -->
+<path d="M600 178 V196 H460 V218" fill="none" stroke="#455A64" stroke-width="1.8" marker-end="url(#ar)"/>
+<text x="468" y="211" font-size="9" font-weight="600" fill="#1B5E20">local home → L2 (R1)</text>
+
+<rect x="262" y="218" width="250" height="132" rx="8" fill="#FFEBDA" stroke="#F57C00" stroke-width="2"/>
+<text x="387" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#A35200">DIR CONTROLLER + DTR</text>
+<rect x="272" y="252" width="110" height="46" rx="5" fill="#FFFFFF" stroke="#F57C00" stroke-width="1.2"/>
+<text x="327" y="268" text-anchor="middle" font-size="9" font-weight="700" fill="#A35200">8-state FSM</text>
+<text x="327" y="283" text-anchor="middle" font-size="8.5" fill="#455A64">I S E M +</text>
+<text x="327" y="295" text-anchor="middle" font-size="8.5" fill="#455A64">4 transient codes</text>
+<rect x="390" y="252" width="112" height="46" rx="5" fill="#FFFFFF" stroke="#F57C00" stroke-width="1.2"/>
+<text x="446" y="268" text-anchor="middle" font-size="9" font-weight="700" fill="#A35200">DTR</text>
+<text x="446" y="283" text-anchor="middle" font-size="8.5" fill="#455A64">op · requester</text>
+<text x="446" y="295" text-anchor="middle" font-size="8.5" fill="#455A64">evict · victim · dirty</text>
+<text x="387" y="317" text-anchor="middle" font-size="9" fill="#455A64">single-exit transients</text>
+<text x="387" y="335" text-anchor="middle" font-size="9" font-weight="600" fill="#B23B00">one outstanding txn / bank (§3.7)</text>
+
+<path d="M512 284 H542" stroke="#455A64" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="527" y="276" text-anchor="middle" font-size="7.5" font-weight="600" fill="#A35200">entry</text>
+
+<rect x="542" y="218" width="200" height="132" rx="8" fill="#FFEBDA" stroke="#F57C00" stroke-width="2"/>
+<text x="642" y="242" text-anchor="middle" font-size="12.5" font-weight="700" fill="#A35200">DIRECTORY ARRAY</text>
+<text x="642" y="264" text-anchor="middle" font-size="9.5" fill="#455A64">32 entries × 32 b</text>
+<rect x="552" y="274" width="60" height="26" fill="#ECEFF1" stroke="#90A4AE" stroke-width="1"/>
+<text x="582" y="291" text-anchor="middle" font-size="7.5" fill="#546E7A">pad 22</text>
+<rect x="612" y="274" width="20" height="26" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+<text x="622" y="291" text-anchor="middle" font-size="8" font-weight="700" fill="#1B5E20">V</text>
+<rect x="632" y="274" width="46" height="26" fill="#FFF3E0" stroke="#F57C00" stroke-width="1"/>
+<text x="655" y="291" text-anchor="middle" font-size="7.5" fill="#A35200">shr 4</text>
+<rect x="678" y="274" width="26" height="26" fill="#E3EEFF" stroke="#5B8FF9" stroke-width="1"/>
+<text x="691" y="291" text-anchor="middle" font-size="7.5" fill="#2C5AA0">own 2</text>
+<rect x="704" y="274" width="28" height="26" fill="#EFE6FF" stroke="#7E57C2" stroke-width="1"/>
+<text x="718" y="291" text-anchor="middle" font-size="7.5" fill="#4A2F8F">st 3</text>
+<text x="642" y="318" text-anchor="middle" font-size="9" fill="#455A64">10 b used · 22 b pad</text>
+<text x="642" y="335" text-anchor="middle" font-size="9" fill="#455A64">full-map · non-inclusive bookkeeping</text>
+
+<!-- ================= DETAIL PANEL ================= -->
+<rect x="772" y="218" width="620" height="300" rx="8" fill="#FBFCFD" stroke="#D6DEE6" stroke-width="1.4"/>
+<text x="786" y="238" font-size="9.5" font-weight="700" fill="#5B6B7C">② PROTOCOL DETAIL · 2×2 ENCODINGS (WP §3.2, §3.5, §3.7)</text>
+
+<text x="786" y="264" font-size="9.5" font-weight="700" fill="#37474F">Directory entry — 10 b used, padded to 32 b</text>
+<rect x="786" y="272" width="340" height="28" fill="#ECEFF1" stroke="#90A4AE" stroke-width="1"/>
+<text x="956" y="290" text-anchor="middle" font-size="8.5" fill="#546E7A">[31:10]  pad · 22 b</text>
+<rect x="1126" y="272" width="24" height="28" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+<text x="1138" y="290" text-anchor="middle" font-size="8.5" font-weight="700" fill="#1B5E20">V</text>
+<rect x="1150" y="272" width="96" height="28" fill="#FFF3E0" stroke="#F57C00" stroke-width="1"/>
+<text x="1198" y="290" text-anchor="middle" font-size="8.5" fill="#A35200">sharers · 4 b</text>
+<rect x="1246" y="272" width="48" height="28" fill="#E3EEFF" stroke="#5B8FF9" stroke-width="1"/>
+<text x="1270" y="290" text-anchor="middle" font-size="8.5" fill="#2C5AA0">owner 2b</text>
+<rect x="1294" y="272" width="84" height="28" fill="#EFE6FF" stroke="#7E57C2" stroke-width="1"/>
+<text x="1336" y="290" text-anchor="middle" font-size="8.5" fill="#4A2F8F">state · 3 b</text>
+<text x="786" y="320" font-size="8.5" fill="#455A64">state (8 codes, zero headroom): I S E M · MEM_WAIT FWD_WAIT INV_WAIT EVICT · V = valid entry</text>
+<text x="786" y="336" font-size="8.3" fill="#455A64">addr: tag 19 b [31:13] · home [12:11] · L2 set [10:8] · L1 set [7:6] · offset [5:0]</text>
+
+<line x1="786" y1="348" x2="1378" y2="348" stroke="#D6DEE6" stroke-width="1"/>
+
+<text x="786" y="366" font-size="9.5" font-weight="700" fill="#37474F">Message class → VC (frozen at 4)</text>
+<text x="786" y="386" font-size="8.5" font-weight="700" fill="#8A6500">VC0  REQ</text>
+<text x="840" y="386" font-size="8.5" fill="#455A64">GETS · GETM · PUTS · PUTM</text>
+<text x="786" y="404" font-size="8.5" font-weight="700" fill="#4A2F8F">VC1  FWD</text>
+<text x="840" y="404" font-size="8.5" fill="#455A64">FWD_GETS · FWD_GETM</text>
+<text x="786" y="422" font-size="8.5" font-weight="700" fill="#1B5E20">VC2  RESP</text>
+<text x="840" y="422" font-size="8.5" fill="#455A64">DATA · DATAFWD · INVACK</text>
+<text x="840" y="436" font-size="8.5" fill="#455A64">UNBLOCK · PUTACK</text>
+<text x="786" y="454" font-size="8.5" font-weight="700" fill="#A02020">VC3  INV</text>
+<text x="840" y="454" font-size="8.5" fill="#455A64">INV</text>
+<text x="786" y="474" font-size="8.3" fill="#5B6B7C">1-flit control · 9-flit data (PUTM, DATA, DATAFWD)</text>
+<text x="786" y="490" font-size="8.3" fill="#5B6B7C">VC set at source, never rewritten · checked vs msg class</text>
+<text x="786" y="506" font-size="8.3" fill="#5B6B7C">credit 3 b / depth 4 · RESP &gt; INV &gt; FWD &gt; REQ</text>
+
+<line x1="1090" y1="356" x2="1090" y2="508" stroke="#D6DEE6" stroke-width="1"/>
+
+<text x="1104" y="366" font-size="9.5" font-weight="700" fill="#37474F">Transient exits — one per state</text>
+<text x="1104" y="386" font-size="8.8" font-weight="700" fill="#1F7A54">L1 · 5 transient states</text>
+<text x="1104" y="402" font-size="8.4" fill="#455A64">IS_D → S/E · IM_D → M · SM_D → M</text>
+<text x="1104" y="417" font-size="8.4" fill="#455A64">EI_A → I · MI_A → I (on PUTACK)</text>
+<text x="1104" y="432" font-size="8.4" fill="#455A64">DATA exits the three _D states</text>
+<line x1="1104" y1="444" x2="1378" y2="444" stroke="#D6DEE6" stroke-width="1"/>
+<text x="1104" y="460" font-size="8.8" font-weight="700" fill="#A35200">DIR · 4 transient states</text>
+<text x="1104" y="476" font-size="8.4" fill="#455A64">MEM_WAIT → E/M · FWD_WAIT → S/M</text>
+<text x="1104" y="491" font-size="8.4" fill="#455A64">INV_WAIT → M — all via UNBLOCK</text>
+<text x="1104" y="506" font-size="8.4" fill="#455A64">EVICT → MEM_WAIT on victim resolve</text>
+
+<!-- ================= ROW 3: L2 BANK / MEM TAP ================= -->
+<line x1="387" y1="350" x2="387" y2="386" stroke="#455A64" stroke-width="1.8" marker-end="url(#ar)"/>
+<text x="396" y="373" font-size="8.5" font-weight="700" fill="#B23B00">R2</text>
+
+<rect x="262" y="386" width="250" height="132" rx="8" fill="#FFEBDA" stroke="#F57C00" stroke-width="2"/>
+<text x="387" y="410" text-anchor="middle" font-size="12.5" font-weight="700" fill="#A35200">L2 BANK · home slice</text>
+<rect x="272" y="420" width="110" height="46" rx="5" fill="#FFFFFF" stroke="#F57C00" stroke-width="1.2"/>
+<text x="327" y="436" text-anchor="middle" font-size="9" font-weight="700" fill="#A35200">TAG 32 × 21 b</text>
+<text x="327" y="451" text-anchor="middle" font-size="8" fill="#455A64">non-contiguous</text>
+<text x="327" y="463" text-anchor="middle" font-size="7.5" fill="#5B6B7C">addr[31:13] + [7:6]</text>
+<rect x="390" y="420" width="112" height="46" rx="5" fill="#FFFFFF" stroke="#F57C00" stroke-width="1.2"/>
+<text x="446" y="436" text-anchor="middle" font-size="9" font-weight="700" fill="#A35200">DATA 2 KB</text>
+<text x="446" y="451" text-anchor="middle" font-size="8" fill="#455A64">32 × 64 B</text>
+<text x="446" y="463" text-anchor="middle" font-size="7.5" fill="#5B6B7C">8 sets × 4 ways</text>
+<text x="387" y="486" text-anchor="middle" font-size="8.8" fill="#455A64">tree-PLRU · write-back</text>
+<text x="387" y="504" text-anchor="middle" font-size="8.8" font-weight="600" fill="#B23B00">single serialized port (R2)</text>
+
+<path d="M512 452 H542" stroke="#455A64" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="527" y="444" text-anchor="middle" font-size="7.5" font-weight="600" fill="#B23B00">fill</text>
+<text x="527" y="466" text-anchor="middle" font-size="7.5" font-weight="600" fill="#B23B00">WB</text>
+
+<rect x="542" y="386" width="200" height="132" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+<text x="642" y="410" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1B5E20">MEMORY TAP</text>
+<text x="642" y="432" text-anchor="middle" font-size="8.8" fill="#455A64">behavioural backing store</text>
+<text x="642" y="449" text-anchor="middle" font-size="8.8" fill="#455A64">1 cycle · home slice only</text>
+<text x="642" y="470" text-anchor="middle" font-size="8.8" fill="#455A64">read: bank miss only (R3)</text>
+<text x="642" y="487" text-anchor="middle" font-size="8.8" fill="#455A64">write: DIR_EVICT → WB</text>
+<text x="642" y="505" text-anchor="middle" font-size="8.8" font-weight="600" fill="#1B5E20">off the NoC path (R4)</text>
+
+<!-- ================= BOTTOM: REMOTE GETM SEQUENCE ================= -->
+<line x1="32" y1="536" x2="1388" y2="536" stroke="#D6DEE6" stroke-width="1.4"/>
+<text x="32" y="558" font-size="12" font-weight="700" fill="#37474F">③ Remote GETM with invalidation — worst-case 5-traversal sequence (2 hops, 4 cycles/hop)</text>
+
+<line x1="120" y1="596" x2="120" y2="686" stroke="#B0BEC5" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="520" y1="596" x2="520" y2="686" stroke="#B0BEC5" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="880" y1="596" x2="880" y2="686" stroke="#B0BEC5" stroke-width="1.2" stroke-dasharray="4 4"/>
+<text x="120" y="578" text-anchor="middle" font-size="9.5" font-weight="700" fill="#37474F">REQUESTER L1 · T</text>
+<text x="120" y="591" text-anchor="middle" font-size="8.5" fill="#1F7A54">IM_D → M</text>
+<text x="520" y="578" text-anchor="middle" font-size="9.5" font-weight="700" fill="#37474F">HOME DIR + L2 BANK</text>
+<text x="520" y="591" text-anchor="middle" font-size="8.5" fill="#A35200">DIR_S → INV_WAIT → DIR_M</text>
+<text x="880" y="578" text-anchor="middle" font-size="9.5" font-weight="700" fill="#37474F">SHARER L1 · S</text>
+<text x="880" y="591" text-anchor="middle" font-size="8.5" fill="#1F7A54">S → I</text>
+
+<line x1="120" y1="612" x2="520" y2="612" stroke="#E65100" stroke-width="2" marker-end="url(#ard)"/>
+<text x="180" y="607" font-size="8.5" font-weight="600" fill="#B23B00">GETM · VC0</text>
+<circle cx="320" cy="612" r="8" fill="#E65100"/><text x="320" y="615" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FFFFFF">1</text>
+
+<line x1="520" y1="628" x2="880" y2="628" stroke="#E65100" stroke-width="2" marker-end="url(#ard)"/>
+<text x="540" y="623" font-size="8.5" font-weight="600" fill="#B23B00">INV · VC3 → sharers except T</text>
+<circle cx="800" cy="628" r="8" fill="#E65100"/><text x="800" y="631" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FFFFFF">2</text>
+
+<line x1="880" y1="644" x2="520" y2="644" stroke="#E65100" stroke-width="2" marker-end="url(#ard)"/>
+<text x="540" y="639" font-size="8.5" font-weight="600" fill="#B23B00">INVACK · VC2</text>
+<circle cx="760" cy="644" r="8" fill="#E65100"/><text x="760" y="647" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FFFFFF">3</text>
+
+<line x1="520" y1="660" x2="120" y2="660" stroke="#E65100" stroke-width="2" marker-end="url(#ard)"/>
+<text x="180" y="655" font-size="8.5" font-weight="600" fill="#B23B00">DATA exclusive · VC2</text>
+<circle cx="400" cy="660" r="8" fill="#E65100"/><text x="400" y="663" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FFFFFF">4</text>
+
+<line x1="120" y1="676" x2="520" y2="676" stroke="#E65100" stroke-width="2" marker-end="url(#ard)"/>
+<text x="180" y="671" font-size="8.5" font-weight="600" fill="#B23B00">UNBLOCK · VC2</text>
+<circle cx="320" cy="676" r="8" fill="#E65100"/><text x="320" y="679" text-anchor="middle" font-size="8.5" font-weight="700" fill="#FFFFFF">5</text>
+
+<!-- ================= BUDGET ================= -->
+<rect x="1020" y="546" width="368" height="150" rx="8" fill="#FBFCFD" stroke="#D6DEE6" stroke-width="1.4"/>
+<text x="1034" y="566" font-size="9.5" font-weight="700" fill="#37474F">Formal bound T · WP §5.3</text>
+<text x="1034" y="588" font-size="9" fill="#455A64">5 traversals × 2 hops × 4 cycles = 40</text>
+<text x="1034" y="605" font-size="9" fill="#455A64">+ NIC / controller / tap overhead ≤ 24</text>
+<text x="1034" y="634" font-size="13.5" font-weight="700" fill="#B23B00">T = 64 cycles (2×2 formal)</text>
+<rect x="1034" y="646" width="212" height="18" fill="#455A64"/>
+<text x="1040" y="659" font-size="8.5" font-weight="600" fill="#FFFFFF">fabric 40</text>
+<rect x="1246" y="646" width="128" height="18" fill="#B0BEC5"/>
+<text x="1252" y="659" font-size="8.5" font-weight="600" fill="#263238">overhead 24</text>
+<text x="1034" y="686" font-size="8.5" fill="#5B6B7C">BMC depth K = 64 · 4×4 regression bound T = 150</text>
+
+<text x="32" y="714" font-size="9" fill="#5B6B7C">R1 local miss never traverses the NoC · R2 one serialized bank port · R3 bank-first fill, tap only on bank miss · R4 NIC ↔ router direct, tap not on the NoC datapath.</text>
+</g>
+</svg><div class="l">
+<span><i class="w" style="background:#E3EEFF;border-color:#5B8FF9"></i>Core</span>
+<span><i class="w" style="background:#E0FBF0;border-color:#3DC98E"></i>L1 (private, MESI)</span>
+<span><i class="w" style="background:#FFF6DC;border-color:#E5A800"></i>Intra-tile mux</span>
+<span><i class="w" style="background:#FFEBDA;border-color:#F57C00"></i>L2 bank + directory</span>
+<span><i class="w" style="background:#EFE6FF;border-color:#7E57C2"></i>NIC</span>
+<span><i class="w" style="background:#FFE5E5;border-color:#E53935"></i>Router</span>
+<span><i class="w" style="background:#E8F5E9;border-color:#2E7D32"></i>Memory tap (local)</span>
+<span><i class="w" style="background:#263238;border-color:#263238"></i>Mesh link</span>
+</div></div></body></html>

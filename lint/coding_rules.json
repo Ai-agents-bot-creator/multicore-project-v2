@@ -1,0 +1,50 @@
+{
+  "comment": "CANONICAL coding-rule set for the tracked RTL under test (rtl/, the single normative tree). Run by lint/check_rules.py; wired into the per-module gate. 25 rules: 3 tool-driven (verilator x2, iverilog x1) and 22 source-level checks that encode the WP section 6 / LINT.md conventions. Each rule is machine-checked and fails loudly; none of them may be weakened to make a gate pass.",
+  "modules": [
+    {
+      "name": "l1_mesi_ctrl",
+      "sources": ["rtl/pkg/tile_pkg.sv", "rtl/l1/l1_mesi_ctrl.sv"]
+    },
+    {
+      "name": "dir_ctrl",
+      "sources": ["rtl/pkg/tile_pkg.sv", "rtl/directory/dir_ctrl.sv"]
+    }
+  ],
+  "verilator": {
+    "flags": ["--lint-only", "-Wall", "-Wno-fatal", "-Irtl/pkg"],
+    "allowed_warnings": ["UNUSEDSIGNAL", "UNUSEDPARAM"]
+  },
+  "iverilog": {
+    "flags": ["-g2012", "-Wall", "-Irtl/pkg"],
+    "ignore_lines": ["sorry:"],
+    "output": "/tmp/opencode/check_rules_iverilog.vvp"
+  },
+  "rules": [
+    {"id": "CR01", "tool": "verilator", "kind": "lint_clean", "text": "Verilator lint exits 0: no %Error line"},
+    {"id": "CR02", "tool": "verilator", "kind": "warning_allowlist", "text": "only the recorded style warning classes fire (UNUSEDSIGNAL, UNUSEDPARAM)"},
+    {"id": "CR03", "tool": "iverilog", "kind": "compile_clean", "text": "Icarus compile exits 0; Icarus 'sorry:' limitation notes are not violations"},
+
+    {"id": "CR04", "tool": "source", "kind": "forbid", "pattern": "\\binitial\\b", "text": "no initial blocks in synthesizable RTL"},
+    {"id": "CR05", "tool": "source", "kind": "forbid", "pattern": "#\\s*\\d", "text": "no delay controls (#) in synthesizable RTL"},
+    {"id": "CR06", "tool": "source", "kind": "forbid", "pattern": "\\b(fork|join)\\b", "text": "no fork/join in synthesizable RTL"},
+    {"id": "CR07", "tool": "source", "kind": "forbid", "pattern": "\\bcase[zx]\\b", "text": "no casez/casex: use a plain case with explicit 4-state semantics"},
+    {"id": "CR08", "tool": "source", "kind": "forbid", "pattern": "\\b(force|release|deassign)\\b\\s+[A-Za-z_]", "text": "no procedural force/release/deassign on a variable"},
+    {"id": "CR09", "tool": "source", "kind": "forbid", "pattern": "\\$(display|write|monitor|strobe|finish|fatal)\\b", "text": "no simulation-only system tasks in synthesizable RTL"},
+    {"id": "CR10", "tool": "source", "kind": "forbid", "pattern": "\\breal(time)?\\b", "text": "no real/realtime types in synthesizable RTL"},
+    {"id": "CR11", "tool": "source", "kind": "forbid", "pattern": "\\bdisable\\b", "text": "no disable of a named block in synthesizable RTL"},
+    {"id": "CR12", "tool": "source", "kind": "forbid", "pattern": "\\b(always\\s*@\\*|always\\s*@\\s*\\()", "text": "no legacy always @* / always @(posedge): use always_ff / always_comb"},
+    {"id": "CR13", "tool": "source", "kind": "forbid", "pattern": "^\\s*reg\\b", "text": "no reg declarations: use logic"},
+    {"id": "CR14", "tool": "source", "kind": "require", "pattern": "always_ff", "text": "every sequential process uses always_ff (present in each RTL module)"},
+    {"id": "CR15", "tool": "source", "kind": "forbid", "pattern": "always_comb[^;]*?\\b<=", "text": "no non-blocking assignment inside an always_comb block"},
+    {"id": "CR16", "tool": "source", "kind": "forbid", "pattern": "always_ff[^;]*?[^<]=[^=]", "text": "no blocking assignment inside an always_ff block (sequential logic must use non-blocking)"},
+    {"id": "CR17", "tool": "source", "kind": "require", "pattern": "if\\s*\\(\\s*!rst_n\\s*\\)", "text": "every sequential process has an explicit asynchronous reset branch (if (!rst_n))"},
+    {"id": "CR18", "tool": "source", "kind": "forbid", "pattern": "\\binput\\s+[A-Za-z_][A-Za-z0-9_]*\\s*[,)]", "text": "no port without an explicit data type"},
+    {"id": "CR19", "tool": "source", "kind": "forbid", "pattern": "\\boutput\\s+[A-Za-z_][A-Za-z0-9_]*\\s*[,)]", "text": "no output port without an explicit data type"},
+    {"id": "CR20", "tool": "source", "kind": "require", "pattern": "`ifndef", "text": "every file has an include guard (`ifndef) so a package/module is included at most once"},
+    {"id": "CR21", "tool": "source", "kind": "forbid", "pattern": "\\bbit\\b\\s*\\[", "text": "no 4-state `bit` storage: use logic for synthesizable state"},
+    {"id": "CR22", "tool": "source", "kind": "forbid", "pattern": "\\b(TODO|FIXME|XXX|HACK)\\b", "text": "no unresolved TODO/FIXME/XXX/HACK markers in the RTL under test"},
+    {"id": "CR23", "tool": "source", "kind": "require", "pattern": "tile_pkg", "text": "every RTL module imports the single source of truth (tile_pkg) for its widths and encodings"},
+    {"id": "CR24", "tool": "source", "kind": "forbid", "pattern": "\\r", "text": "no CRLF line endings: the RTL is LF-only"},
+    {"id": "CR25", "tool": "source", "kind": "forbid", "pattern": "\\b(wait|expect)\\s*\\(", "text": "no wait/expect statements in synthesizable RTL"}
+  ]
+}

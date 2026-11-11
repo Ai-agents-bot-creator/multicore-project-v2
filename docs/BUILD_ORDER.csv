@@ -1,0 +1,14 @@
+Build_Order,Module_Name,File_Path,Parent_Module,Gate_Status,Spec_Source,Effort_Days
+0,tile_pkg,rtl/pkg/tile_pkg.sv,None,Baseline,WP §3.2 §3.6 §3.8 Appendix C,Done
+1,l2_bank,rtl/l2/l2_bank.sv,cpu_tile,Baseline,WP §3.2 §3.6 §16.3 N3a N13,2.0
+2,l1_mesi_ctrl,rtl/l1/l1_mesi_ctrl.sv,cpu_tile,Baseline,WP §3.3 Appendix A Ruling B2 §16.1,4.5
+3,dir_ctrl,rtl/directory/dir_ctrl.sv,cpu_tile,Baseline,WP §3.3 §3.7 Appendix B Ruling B2 §16.2,4.5
+4,nic,rtl/nic/nic.sv,cpu_tile,Baseline,WP §3.5 §3.8 §16.4 §16.9 N3b,1.0
+5,router,rtl/router/router.sv,cpu_tile,Baseline,WP §3.5 §16.7 Ruling B1,2.0
+6,mem_tap,rtl/mem_tap/mem_tap.sv,cpu_tile,Baseline,WP §3.9 §16.6 A6,0.5
+7,intra_tile_mux,rtl/tile/intra_tile_mux.sv,cpu_tile,Baseline,WP §3.1 block 8 §16.10,1.0
+8,cpu_tile,rtl/tile/cpu_tile.sv,mesh_top,Baseline,WP §3.1 LLD 2x2 mesh,1.0
+9,mesh_top,rtl/mesh/mesh_top.sv,fpga_top,Baseline,WP §3.5 §3.6 §16.13,1.0
+10,fpga_top,syn/fpga/fpga_top.sv,Board_Top,Baseline,WP §6.1 §6.4 §16.14,1.5
+11,dma_tile,rtl/dma/dma_tile.sv,mesh_top,Gated (4x4 sim only),WP §3.11 §16.11 Ruling B4,4.5
+

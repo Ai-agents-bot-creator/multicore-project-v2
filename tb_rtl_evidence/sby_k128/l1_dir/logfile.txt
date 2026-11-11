@@ -1,0 +1,184 @@
+SBY  1:12:39 [l1_dir] Removing directory '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir'.
+SBY  1:12:39 [l1_dir] Copy '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/../../rtl_frozen/tile_pkg.sv' to '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir/src/tile_pkg.sv'.
+SBY  1:12:39 [l1_dir] Copy '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/../../rtl_frozen/l1_mesi_ctrl.sv' to '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir/src/l1_mesi_ctrl.sv'.
+SBY  1:12:39 [l1_dir] Copy '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/../../rtl_frozen/directory/dir_ctrl.sv' to '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir/src/dir_ctrl.sv'.
+SBY  1:12:39 [l1_dir] Copy '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/sva_l1_dir.sv' to '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir/src/sva_l1_dir.sv'.
+SBY  1:12:39 [l1_dir] Copy '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/fml_l1_dir.sv' to '/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/sby_k128/l1_dir/src/fml_l1_dir.sv'.
+SBY  1:12:39 [l1_dir] engine_0: smtbmc boolector
+SBY  1:12:39 [l1_dir] base: starting process "cd l1_dir/src; yosys -ql ../model/design.log ../model/design.ys"
+SBY  1:12:50 [l1_dir] base: finished (returncode=0)
+SBY  1:12:50 [l1_dir] prep: starting process "cd l1_dir/model; yosys -ql design_prep.log design_prep.ys"
+SBY  1:12:52 [l1_dir] prep: finished (returncode=0)
+SBY  1:12:52 [l1_dir] smt2: starting process "cd l1_dir/model; yosys -ql design_smt2.log design_smt2.ys"
+SBY  1:12:52 [l1_dir] smt2: finished (returncode=0)
+SBY  1:12:52 [l1_dir] engine_0: starting process "cd l1_dir; yosys-smtbmc -s boolector --presat --unroll --noprogress -t 128  --append 0 --dump-vcd engine_0/trace.vcd --dump-yw engine_0/trace.yw --dump-vlogtb engine_0/trace_tb.v --dump-smtc engine_0/trace.smtc model/design_smt2.smt2"
+SBY  1:12:52 [l1_dir] engine_0: ##   0:00:00  Solver: boolector
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assumptions in step 0..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assertions in step 0..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assumptions in step 1..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assertions in step 1..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assumptions in step 2..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assertions in step 2..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assumptions in step 3..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assertions in step 3..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assumptions in step 4..
+SBY  1:12:53 [l1_dir] engine_0: ##   0:00:00  Checking assertions in step 4..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assumptions in step 5..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assertions in step 5..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assumptions in step 6..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assertions in step 6..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assumptions in step 7..
+SBY  1:12:54 [l1_dir] engine_0: ##   0:00:01  Checking assertions in step 7..
+SBY  1:12:55 [l1_dir] engine_0: ##   0:00:02  Checking assumptions in step 8..
+SBY  1:12:55 [l1_dir] engine_0: ##   0:00:02  Checking assertions in step 8..
+SBY  1:12:55 [l1_dir] engine_0: ##   0:00:02  Checking assumptions in step 9..
+SBY  1:12:55 [l1_dir] engine_0: ##   0:00:02  Checking assertions in step 9..
+SBY  1:12:55 [l1_dir] engine_0: ##   0:00:02  Checking assumptions in step 10..
+SBY  1:12:56 [l1_dir] engine_0: ##   0:00:03  Checking assertions in step 10..
+SBY  1:12:56 [l1_dir] engine_0: ##   0:00:03  Checking assumptions in step 11..
+SBY  1:12:56 [l1_dir] engine_0: ##   0:00:03  Checking assertions in step 11..
+SBY  1:12:57 [l1_dir] engine_0: ##   0:00:04  Checking assumptions in step 12..
+SBY  1:12:57 [l1_dir] engine_0: ##   0:00:04  Checking assertions in step 12..
+SBY  1:12:58 [l1_dir] engine_0: ##   0:00:05  Checking assumptions in step 13..
+SBY  1:12:58 [l1_dir] engine_0: ##   0:00:05  Checking assertions in step 13..
+SBY  1:13:00 [l1_dir] engine_0: ##   0:00:07  Checking assumptions in step 14..
+SBY  1:13:00 [l1_dir] engine_0: ##   0:00:07  Checking assertions in step 14..
+SBY  1:13:04 [l1_dir] engine_0: ##   0:00:11  Checking assumptions in step 15..
+SBY  1:13:06 [l1_dir] engine_0: ##   0:00:14  Checking assertions in step 15..
+SBY  1:13:12 [l1_dir] engine_0: ##   0:00:20  Checking assumptions in step 16..
+SBY  1:13:18 [l1_dir] engine_0: ##   0:00:26  Checking assertions in step 16..
+SBY  1:13:29 [l1_dir] engine_0: ##   0:00:36  Checking assumptions in step 17..
+SBY  1:13:33 [l1_dir] engine_0: ##   0:00:40  Checking assertions in step 17..
+SBY  1:13:48 [l1_dir] engine_0: ##   0:00:55  Checking assumptions in step 18..
+SBY  1:13:49 [l1_dir] engine_0: ##   0:00:56  Checking assertions in step 18..
+SBY  1:14:07 [l1_dir] engine_0: ##   0:01:15  Checking assumptions in step 19..
+SBY  1:14:09 [l1_dir] engine_0: ##   0:01:16  Checking assertions in step 19..
+SBY  1:14:42 [l1_dir] engine_0: ##   0:01:49  Checking assumptions in step 20..
+SBY  1:14:43 [l1_dir] engine_0: ##   0:01:50  Checking assertions in step 20..
+SBY  1:14:55 [l1_dir] engine_0: ##   0:02:02  Checking assumptions in step 21..
+SBY  1:14:56 [l1_dir] engine_0: ##   0:02:03  Checking assertions in step 21..
+SBY  1:15:30 [l1_dir] engine_0: ##   0:02:37  Checking assumptions in step 22..
+SBY  1:15:31 [l1_dir] engine_0: ##   0:02:38  Checking assertions in step 22..
+SBY  1:16:25 [l1_dir] engine_0: ##   0:03:32  Checking assumptions in step 23..
+SBY  1:16:26 [l1_dir] engine_0: ##   0:03:33  Checking assertions in step 23..
+SBY  1:17:13 [l1_dir] engine_0: ##   0:04:20  Checking assumptions in step 24..
+SBY  1:17:25 [l1_dir] engine_0: ##   0:04:32  Checking assertions in step 24..
+SBY  1:18:14 [l1_dir] engine_0: ##   0:05:21  Checking assumptions in step 25..
+SBY  1:18:16 [l1_dir] engine_0: ##   0:05:23  Checking assertions in step 25..
+SBY  1:19:16 [l1_dir] engine_0: ##   0:06:23  waiting for solver (1 minute)
+SBY  1:19:44 [l1_dir] engine_0: ##   0:06:51  Checking assumptions in step 26..
+SBY  1:19:46 [l1_dir] engine_0: ##   0:06:53  Checking assertions in step 26..
+SBY  1:20:32 [l1_dir] engine_0: ##   0:07:39  Checking assumptions in step 27..
+SBY  1:20:34 [l1_dir] engine_0: ##   0:07:41  Checking assertions in step 27..
+SBY  1:21:34 [l1_dir] engine_0: ##   0:08:41  waiting for solver (1 minute)
+SBY  1:21:59 [l1_dir] engine_0: ##   0:09:06  Checking assumptions in step 28..
+SBY  1:22:01 [l1_dir] engine_0: ##   0:09:08  Checking assertions in step 28..
+SBY  1:23:01 [l1_dir] engine_0: ##   0:10:08  waiting for solver (1 minute)
+SBY  1:23:16 [l1_dir] engine_0: ##   0:10:23  Checking assumptions in step 29..
+SBY  1:23:17 [l1_dir] engine_0: ##   0:10:25  Checking assertions in step 29..
+SBY  1:24:17 [l1_dir] engine_0: ##   0:11:25  waiting for solver (1 minute)
+SBY  1:25:10 [l1_dir] engine_0: ##   0:12:17  Checking assumptions in step 30..
+SBY  1:25:12 [l1_dir] engine_0: ##   0:12:19  Checking assertions in step 30..
+SBY  1:26:12 [l1_dir] engine_0: ##   0:13:19  waiting for solver (1 minute)
+SBY  1:26:40 [l1_dir] engine_0: ##   0:13:47  Checking assumptions in step 31..
+SBY  1:26:42 [l1_dir] engine_0: ##   0:13:49  Checking assertions in step 31..
+SBY  1:27:42 [l1_dir] engine_0: ##   0:14:49  waiting for solver (1 minute)
+SBY  1:28:36 [l1_dir] engine_0: ##   0:15:43  Checking assumptions in step 32..
+SBY  1:29:36 [l1_dir] engine_0: ##   0:16:43  waiting for solver (1 minute)
+SBY  1:30:08 [l1_dir] engine_0: ##   0:17:15  Checking assertions in step 32..
+SBY  1:31:08 [l1_dir] engine_0: ##   0:18:15  waiting for solver (1 minute)
+SBY  1:35:08 [l1_dir] engine_0: ##   0:22:15  waiting for solver (5 minutes)
+SBY  1:35:54 [l1_dir] engine_0: ##   0:23:01  Checking assumptions in step 33..
+SBY  1:35:56 [l1_dir] engine_0: ##   0:23:03  Checking assertions in step 33..
+SBY  1:36:56 [l1_dir] engine_0: ##   0:24:03  waiting for solver (1 minute)
+SBY  1:39:54 [l1_dir] engine_0: ##   0:27:01  Checking assumptions in step 34..
+SBY  1:39:57 [l1_dir] engine_0: ##   0:27:04  Checking assertions in step 34..
+SBY  1:40:57 [l1_dir] engine_0: ##   0:28:04  waiting for solver (1 minute)
+SBY  1:44:34 [l1_dir] engine_0: ##   0:31:41  Checking assumptions in step 35..
+SBY  1:44:37 [l1_dir] engine_0: ##   0:31:44  Checking assertions in step 35..
+SBY  1:45:37 [l1_dir] engine_0: ##   0:32:44  waiting for solver (1 minute)
+SBY  1:48:38 [l1_dir] engine_0: ##   0:35:45  Checking assumptions in step 36..
+SBY  1:48:42 [l1_dir] engine_0: ##   0:35:49  Checking assertions in step 36..
+SBY  1:49:42 [l1_dir] engine_0: ##   0:36:49  waiting for solver (1 minute)
+SBY  1:53:29 [l1_dir] engine_0: ##   0:40:36  Checking assumptions in step 37..
+SBY  1:53:40 [l1_dir] engine_0: ##   0:40:47  Checking assertions in step 37..
+SBY  1:54:40 [l1_dir] engine_0: ##   0:41:47  waiting for solver (1 minute)
+SBY  1:58:01 [l1_dir] engine_0: ##   0:45:08  Checking assumptions in step 38..
+SBY  1:58:30 [l1_dir] engine_0: ##   0:45:37  Checking assertions in step 38..
+SBY  1:59:30 [l1_dir] engine_0: ##   0:46:37  waiting for solver (1 minute)
+SBY  2:03:30 [l1_dir] engine_0: ##   0:50:37  waiting for solver (5 minutes)
+SBY  2:03:48 [l1_dir] engine_0: ##   0:50:55  Checking assumptions in step 39..
+SBY  2:04:36 [l1_dir] engine_0: ##   0:51:43  Checking assertions in step 39..
+SBY  2:05:36 [l1_dir] engine_0: ##   0:52:43  waiting for solver (1 minute)
+SBY  2:09:36 [l1_dir] engine_0: ##   0:56:43  waiting for solver (5 minutes)
+SBY  2:11:37 [l1_dir] engine_0: ##   0:58:44  Checking assumptions in step 40..
+SBY  2:11:50 [l1_dir] engine_0: ##   0:58:57  Checking assertions in step 40..
+SBY  2:12:50 [l1_dir] engine_0: ##   0:59:57  waiting for solver (1 minute)
+SBY  2:16:50 [l1_dir] engine_0: ##   1:03:57  waiting for solver (5 minutes)
+SBY  2:20:30 [l1_dir] engine_0: ##   1:07:37  Checking assumptions in step 41..
+SBY  2:21:13 [l1_dir] engine_0: ##   1:08:20  Checking assertions in step 41..
+SBY  2:22:13 [l1_dir] engine_0: ##   1:09:20  waiting for solver (1 minute)
+SBY  2:26:13 [l1_dir] engine_0: ##   1:13:20  waiting for solver (5 minutes)
+SBY  2:31:13 [l1_dir] engine_0: ##   1:18:20  waiting for solver (10 minutes)
+SBY  2:31:22 [l1_dir] engine_0: ##   1:18:29  Checking assumptions in step 42..
+SBY  2:31:44 [l1_dir] engine_0: ##   1:18:51  Checking assertions in step 42..
+SBY  2:32:44 [l1_dir] engine_0: ##   1:19:51  waiting for solver (1 minute)
+SBY  2:36:44 [l1_dir] engine_0: ##   1:23:51  waiting for solver (5 minutes)
+SBY  2:41:44 [l1_dir] engine_0: ##   1:28:51  waiting for solver (10 minutes)
+SBY  2:44:44 [l1_dir] engine_0: ##   1:31:51  Checking assumptions in step 43..
+SBY  2:45:24 [l1_dir] engine_0: ##   1:32:31  Checking assertions in step 43..
+SBY  2:46:24 [l1_dir] engine_0: ##   1:33:31  waiting for solver (1 minute)
+SBY  2:50:24 [l1_dir] engine_0: ##   1:37:31  waiting for solver (5 minutes)
+SBY  2:55:24 [l1_dir] engine_0: ##   1:42:31  waiting for solver (10 minutes)
+SBY  3:00:24 [l1_dir] engine_0: ##   1:47:31  waiting for solver (15 minutes)
+SBY  3:05:47 [l1_dir] engine_0: ##   1:52:54  Checking assumptions in step 44..
+SBY  3:06:47 [l1_dir] engine_0: ##   1:53:54  waiting for solver (1 minute)
+SBY  3:07:57 [l1_dir] engine_0: ##   1:55:04  Checking assertions in step 44..
+SBY  3:08:57 [l1_dir] engine_0: ##   1:56:04  waiting for solver (1 minute)
+SBY  3:12:57 [l1_dir] engine_0: ##   2:00:04  waiting for solver (5 minutes)
+SBY  3:17:57 [l1_dir] engine_0: ##   2:05:04  waiting for solver (10 minutes)
+SBY  3:22:57 [l1_dir] engine_0: ##   2:10:04  waiting for solver (15 minutes)
+SBY  3:32:02 [l1_dir] engine_0: ##   2:19:09  Checking assumptions in step 45..
+SBY  3:33:02 [l1_dir] engine_0: ##   2:20:09  waiting for solver (1 minute)
+SBY  3:33:25 [l1_dir] engine_0: ##   2:20:32  Checking assertions in step 45..
+SBY  3:34:25 [l1_dir] engine_0: ##   2:21:32  waiting for solver (1 minute)
+SBY  3:38:25 [l1_dir] engine_0: ##   2:25:32  waiting for solver (5 minutes)
+SBY  3:43:25 [l1_dir] engine_0: ##   2:30:32  waiting for solver (10 minutes)
+SBY  3:48:25 [l1_dir] engine_0: ##   2:35:32  waiting for solver (15 minutes)
+SBY  4:01:38 [l1_dir] engine_0: ##   2:48:45  Checking assumptions in step 46..
+SBY  4:02:38 [l1_dir] engine_0: ##   2:49:45  waiting for solver (1 minute)
+SBY  4:02:59 [l1_dir] engine_0: ##   2:50:06  Checking assertions in step 46..
+SBY  4:03:59 [l1_dir] engine_0: ##   2:51:06  waiting for solver (1 minute)
+SBY  4:07:59 [l1_dir] engine_0: ##   2:55:06  waiting for solver (5 minutes)
+SBY  4:12:59 [l1_dir] engine_0: ##   3:00:06  waiting for solver (10 minutes)
+SBY  4:17:59 [l1_dir] engine_0: ##   3:05:06  waiting for solver (15 minutes)
+SBY  4:32:59 [l1_dir] engine_0: ##   3:20:06  waiting for solver (30 minutes)
+SBY  4:41:08 [l1_dir] engine_0: ##   3:28:15  Checking assumptions in step 47..
+SBY  4:42:08 [l1_dir] engine_0: ##   3:29:15  waiting for solver (1 minute)
+SBY  4:44:01 [l1_dir] engine_0: ##   3:31:08  Checking assertions in step 47..
+SBY  4:45:01 [l1_dir] engine_0: ##   3:32:08  waiting for solver (1 minute)
+SBY  4:49:01 [l1_dir] engine_0: ##   3:36:08  waiting for solver (5 minutes)
+SBY  4:54:01 [l1_dir] engine_0: ##   3:41:08  waiting for solver (10 minutes)
+SBY  4:59:01 [l1_dir] engine_0: ##   3:46:08  waiting for solver (15 minutes)
+SBY  5:14:01 [l1_dir] engine_0: ##   4:01:08  waiting for solver (30 minutes)
+SBY  5:19:24 [l1_dir] engine_0: ##   4:06:31  Checking assumptions in step 48..
+SBY  5:20:19 [l1_dir] engine_0: ##   4:07:26  Checking assertions in step 48..
+SBY  5:21:19 [l1_dir] engine_0: ##   4:08:26  waiting for solver (1 minute)
+SBY  5:25:19 [l1_dir] engine_0: ##   4:12:26  waiting for solver (5 minutes)
+SBY  5:30:19 [l1_dir] engine_0: ##   4:17:26  waiting for solver (10 minutes)
+SBY  5:35:19 [l1_dir] engine_0: ##   4:22:26  waiting for solver (15 minutes)
+SBY  5:43:15 [l1_dir] engine_0: ##   4:30:22  BMC failed!
+SBY  5:43:15 [l1_dir] engine_0: ##   4:30:22  Assert failed in fml_l1_dir: u_sva.a2_2
+SBY  5:43:15 [l1_dir] engine_0: ##   4:30:22  Writing trace to VCD file: engine_0/trace.vcd
+SBY  5:43:18 [l1_dir] engine_0: ##   4:30:25  Writing trace to Verilog testbench: engine_0/trace_tb.v
+SBY  5:43:18 [l1_dir] engine_0: ##   4:30:25  Writing trace to constraints file: engine_0/trace.smtc
+SBY  5:43:18 [l1_dir] engine_0: ##   4:30:25  Writing trace to Yosys witness file: engine_0/trace.yw
+SBY  5:43:23 [l1_dir] engine_0: ##   4:30:30  Status: failed
+SBY  5:43:23 [l1_dir] engine_0: finished (returncode=1)
+SBY  5:43:23 [l1_dir] engine_0: Status returned by engine: FAIL
+SBY  5:43:23 [l1_dir] summary: Elapsed clock time [H:MM:SS (secs)]: 4:30:44 (16244)
+SBY  5:43:23 [l1_dir] summary: Elapsed process time [H:MM:SS (secs)]: 4:29:28 (16168)
+SBY  5:43:23 [l1_dir] summary: engine_0 (smtbmc boolector) returned FAIL
+SBY  5:43:23 [l1_dir] summary: counterexample trace: l1_dir/engine_0/trace.vcd
+SBY  5:43:23 [l1_dir] summary:   failed assertion fml_l1_dir.\u_sva.a2_2 at sva_l1_dir.sv:74.5-75.65 step 48
+SBY  5:43:23 [l1_dir] DONE (FAIL, rc=2)

@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="cocotb tests"><testsuite name="directed_owner_evict" errors="0" failures="2" skipped="0" tests="2" time="0.018" timestamp="2026-11-06T15:12:39.491970+00:00" hostname="DKKARCH"><testcase classname="directed_owner_evict" name="test_owner_evict_forward" time="0.009"><failure message="A2.2a: missing sharer bit 0001 (sharers=0000, s_mask=0001)" type="AssertionError">Traceback (most recent call last):
+  File "/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/directed_owner_evict/directed_owner_evict.py", line 286, in test_owner_evict_forward
+    _check(dut, s, released, release_t)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/directed_owner_evict/directed_owner_evict.py", line 158, in _check
+    raise AssertionError(
+        f"A2.2a: missing sharer bit {missing:04b} "
+        f"(sharers={sharers:04b}, s_mask={mask:04b})")
+AssertionError: A2.2a: missing sharer bit 0001 (sharers=0000, s_mask=0001)
+</failure><properties><property name="cocotb" value="True" /><property name="random_seed" value="1793977959" /><property name="file" value="/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/directed_owner_evict/directed_owner_evict.py" /><property name="line" value="251" /><property name="sim_time_unit" value="ns" /><property name="sim_time_start" value="0.0" /><property name="sim_time_stop" value="640.0" /><property name="sim_time_duration" value="640.0" /><property name="sim_time_ratio" value="68493.048069987" /></properties><system-err>Test failed with COCOTB_RANDOM_SEED=1793977959
+</system-err></testcase><testcase classname="directed_owner_evict" name="test_unblock_before_puts" time="0.008"><failure message="B5.3: dir exited to DIR_S without the requester (sharers=0010, l1_0=S)&#10;assert ((2 &gt;&gt; 0) &amp; 1)" type="AssertionError">Traceback (most recent call last):
+  File "/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/directed_owner_evict/directed_owner_evict.py", line 368, in test_unblock_before_puts
+    assert (s["dir_sharers"] &gt;&gt; 0) &amp; 1, (
+    ...&lt;2 lines&gt;...
+        f"{L1_NAME.get(s['l1_0_state'])})")
+AssertionError: B5.3: dir exited to DIR_S without the requester (sharers=0010, l1_0=S)
+assert ((2 &gt;&gt; 0) &amp; 1)
+</failure><properties><property name="cocotb" value="True" /><property name="random_seed" value="1793977959" /><property name="file" value="/mnt/Code/visualstudio/Design-arch_multi-core/tb_rtl_evidence/directed_owner_evict/directed_owner_evict.py" /><property name="line" value="311" /><property name="sim_time_unit" value="ns" /><property name="sim_time_start" value="640.001" /><property name="sim_time_stop" value="1360.001" /><property name="sim_time_duration" value="720.0" /><property name="sim_time_ratio" value="87306.70809519006" /></properties><system-err>Test failed with COCOTB_RANDOM_SEED=1793977959
+</system-err></testcase></testsuite></testsuites>

@@ -1,0 +1,159 @@
+Use @system-design to handle: I checked the WP (§3–§13, appendices) against the SPEC_SHEET, the approved LLD PDF, both HLD/LLD diagram files, and the rendered HTML (19 diagrams, consistent with its `.md` sources). Below: **contradictions** (two normative statements disagree), **ambiguities** (WP is silent where the specs assume something), and **gaps in the SPEC_SHEET's own ⚠ ledger** — items the diagrams flag but §15 does not carry.
+
+Everything below is new to the SPEC_SHEET unless noted; its existing 15 ⚠ items are all correct and stand.
+
+---
+
+# 1. Contradictions
+
+### A1 — Silent E→M upgrade leaves the directory in DIR_E, but there is no `DIR_E + PUTM` transition ⚠ **highest**
+- `FINAL_whitepaper_v3.0.md:249` (§3.4) and `:990` (Appendix A): E→M is silent, "no message".
+- Appendix B (`:1016–1023`) has exactly four DIR_E rows — GETS(owner), GETS(other), GETM(other), PUTS(owner). **There is no `DIR_E | PUTM` row.** `DIR_M | PUTM` exists (`:1025`).
+- Consequence: store to an E line → silent M → eviction sends PUTM → it lands on a directory that still believes DIR_E. Undefined transition.
+- Second-order: `:404` (§3.9) claims "the home tap always holds the authoritative value … once a line is not in DIR_M" — false for DIR_E + owner-in-M (tap and bank are stale).
+- Third: LLD-3 `DIR_E --> DIR_E : GETS from owner, reply DATA from the home bank` returns stale data if the owner is in M.
+- **Needs:** either a DIR_E+PUTM row, or DIR_E must record dirtiness, or the silent upgrade is withdrawn.
+
+### A2 — The forward path never releases the old owner → breaks A1.1 and A1.3
+- Appendix B `:1020–1021`: `DIR_M | GETM, other` → DIR_FWD_WAIT → FWD_GETM → DATAFWD → DATA → UNBLOCK → DIR_M ("ownership transfer"). **No INV is sent to the old owner.**
+- If the old owner keeps its M copy → two copies in M → violates A1.1. If it drops it → violates rule 2 ("no eviction is silent"; it must send PUTM). **Neither is legal.**
+- Mirror case: `DIR_E | GETS, other` → forward → dir becomes DIR_S, but the old owner is still in E → violates A1.3 ("a line in S excludes any E or M copy") and A2.2 (sharers must equal the S-mask) unless the owner downgrades E→S *and* the directory sets its sharer bit. Neither is stated anywhere.
+- Appendix B note 1 (`:1035`) half-admits it ("A PUTM arriving while DIR_FWD_WAIT is therefore legal") but the L1 FSM has no way to send one in that situation, and it doesn't say who downgrades whom.
+
+### A3 — The L1 FSM has no FWD_GETS / FWD_GETM arrival transition at all
+- Appendix A (`:983–1001`) contains **no FWD event** — the only snoop input modelled is INV.
+- Yet the forward is the protocol's main data path: §3.4 `:252–253`, Appendix B `:1022`, and LLD-4's RX decoder (`TO_L1`: "INV, FWD_GETS, FWD_GETM, DATA, PUTACK") all route FWD to the L1 snoop port.
+- So the owner-side half of the forward is missing from the normative FSM; only the LLD's signal list shows it.
+
+### A4 — The single-exit rule is contradicted by the "any state → DIR_EVICT" victim path
+- `:206` (§3.3): "Each transient state field has exactly one exit event: DIR_MEM_WAIT, DIR_FWD_WAIT, and DIR_INV_WAIT exit on UNBLOCK"; intermediate events "never change the SRAM state field on their own."
+- `:1027` (Appendix B): "| any | Fill requires a victim | Enter DIR_EVICT |"; LLD-3 draws `state "entered from ANY state when a fill requires a victim way" as VictimNeeded`.
+- DIR_MEM_WAIT → DIR_EVICT is a state change on a non-exit event. This is precisely the property the bounded-liveness proof in §5.3 is said to rest on.
+- **Note:** SPEC_SHEET §7 restates the single-exit rule as normative and does **not** flag this.
+
+### A5 — R3 (bank-first) was applied to §3.2/§3.9 but never to Appendix B / §3.4
+- Appendix B `:1009–1010` still read "fetch from the memory tap"; §3.4 `:247` still reads "mem_tap read".
+- §3.2 `:164` (R3), LLD-3 and LLD-5 correctly say bank-first-then-tap.
+- The normative FSM and the narrative sequence still carry the pre-R3 wording.
+
+### A6 — WP §5.2 vs §5.3: are A3 and A7 proved formally or only simulated?
+- `:636` (§5.2): "The A1.x, A2.x, A4.x, A6.x, A8.x subsets are additionally proved formally; the remainder are checked in simulation" → **A3 and A7 are simulation-only.**
+- `:659` (§5.3): "Safety — proved by BMC … Properties: A1.1–A1.5, A2.1–A2.7, **A3**, A4, A6, **A7**, A8" → A3 and A7 **are** BMC-proved. Appendix E `:1088` and diagram HLD-F3 agree with §5.3.
+- `:636` also claims the distinction is "kept distinct throughout" — which this sentence itself breaks.
+
+### A7 — WP §6.1's 2×2 per-tile table uses the 4×4 L2 tag width
+- `:749` (in the "Per CPU tile (2×2)" table): "L2 tag (32 × 19 b)".
+- §3.6 says the 2×2 stored tag is `{addr[31:13], addr[7:6]}` = **21 b**. Diagram LLD-F2 and SPEC_SHEET §3/§6 both say 21 b.
+- The WP contradicts its own §3.6 *and* the 2×2 diagram.
+
+### A8 — WP §6.1's BRAM ceiling is violated by its own conservative figure
+- `:739`: BRAM36 target ≤ 48, **ceiling ≤ 70**.
+- `:758`: 2×2 conservative array mapping = **80** BRAM36 → exceeds the paper's own ≤ 70 ceiling.
+- The prose "BRAM is not a constraint at 2×2 (28–80 of 140)" is true against the device but false against the stated ceiling.
+
+### A9 — §4.4's "Total LRU state" uses DMA-gated arithmetic in a baseline table
+- `:517`: "15 × 12 b + 15 × 24 b = 540 b" — 15 CPU tiles is the **DMA-enabled** 4×4 configuration.
+- Baseline 4×4 (16 CPU tiles) → 576 b. The committed 2×2 FPGA config (4 tiles) → 144 b. The number is wrong for both configurations the paper actually builds.
+
+### A10 — §7.1 schedule and §7.2 milestones are two different plans
+- §7.1: Weeks 11–12 = "FPGA 2×2 synthesis, XDC, timing closure, bitstream"; Weeks 13–14 = "coverage closure, documentation, white paper finalisation".
+- §7.2: bitstream = Week 14, XDC = Week 14, resource budget = Week 14, paper finalised = Week 15, submitted = Week 16.
+- The bitstream/XDC work is in weeks 11–12 in one table and week 14 in the other; the paper finalisation likewise (wk 14 vs 15).
+
+### A11 — Version contradiction inside the WP
+- Header `:3` "Version 3.0 — Unified Final Specification" (and the filename) vs footer `:1165` "**End of White Paper — Version 5.0**".
+
+### A12 — Where pending bank work queues: three different answers
+- §3.2 `:164`: fills, remote requests and tap traffic "all queue behind [the single serialized access port]" → queue at the bank.
+- §3.7 `:346`: "concurrent requests to other lines in that bank **queue in the NIC**" → queue at the NIC.
+- LLD-5 draws a third location: a `Q` ("Pending request handling per bank") before the bank arbiter.
+- SPEC_SHEET §15 flags the queue's *depth* and *service order*, but not its *location*.
+
+### A13 — Diagram LLD-7 contradicts the WP on the X/Y bit order
+- 4×4 diagram, LLD-7 `HOME` node: "The bit order of X and Y inside the 4-bit home field is **NOT SPECIFIED IN WP**."
+- WP §3.6 `:314` and §13 item Y **do** specify it: `{X,Y}`, X in the higher-order bits; `TILE_ID[1]=X, TILE_ID[0]=Y`. SPEC_SHEET §5 treats it as normative.
+- (The diagram's *other* claim — tile-ID → mesh-position mapping — is a genuinely different gap; see B6.)
+
+### A14 — PUTACK is sent to a sharer that is no longer waiting for it
+- Appendix B `:1024`: "DIR_S | PUTS (sharer) | Clear that sharer bit; **send PUTACK**".
+- Appendix A: the S-eviction path is `S → I` directly, **no transient** — unlike EI_A/MI_A there is no state that waits for the PUTACK.
+- Either the L1 must tolerate an unmatched PUTACK in state I (needs an exception to A3's "no response without a request"), or the directory must not send it. Undecided.
+
+### A15 — A2.7 references an encoding value that does not exist
+- `:628` (A2.7): "A DIR_*_WAIT entry ⟹ valid = 1 and `DTR.pending_op ≠ NONE`".
+- §3.7 `:335` defines the 5 used pending-op codes as **GETS, GETM, PUT, EVICT, DMA** — there is no `NONE`. (NONE exists only in the *evict sub-state* field.) The 3-bit field has 3 spare codes, but which one is NONE is not stated.
+
+### A16 — Inclusion policy vs the DATAFWD bank write (minor)
+- §3.2 `:162`: the bank's copy is stale during "DIR_M **or DIR_FWD_WAIT with a dirty owner**".
+- But `:1022` (Appendix B) writes the dirty data into the bank on DATAFWD while in DIR_FWD_WAIT. LLD-3/LLD-5 correctly limit the staleness claim to DIR_M only — the WP §3.2 sentence is the outlier.
+
+---
+
+# 2. Ambiguities / under-specification (WP silent; the specs assume something)
+
+**B1 — The fairness bound does not compose (Premise F).**
+§3.5 `:283`: "a VC that has waited ≥ 8 arbitration rounds is granted next", and "Every VC with pending traffic is thus served within a bound of at most 8 rounds". The escape is at the **input** port; the **output** port is round-robin across inputs. The bound as written cannot survive the output-port wait, and neither "arbitration round" → cycles nor the age-counter granularity (per port, or per port×VC) is defined. Premise F underwrites the liveness claim and T = 64, so this needs closing. SPEC_SHEET §9.3 restates the rule but flags only the 8-vs-measured question, not this.
+
+**B2 — A dirty eviction concurrent with an outstanding miss is unrepresentable.**
+The L1 FSM has one transient (IS_D/IM_D/SM_D/EI_A/MI_A) per tile; MSHRs are future scope (§4.6, §9). A tile holding line A in M that misses on line B needs IM_D *and* MI_A simultaneously — Appendix A cannot express it, and no rule says the eviction is deferred. Not in SPEC_SHEET §15.
+
+**B3 — Granularity of "one outstanding transaction per bank".**
+§3.7 `:346` makes it a premise of the single-exit rule and Lemma L1. But `DIR_S + GETS` (`:1012`) runs with **no transient**, while DIR_EVICT is bank-wide and DIR_INV_WAIT is per-line. Whether the DTR lock is per bank, per line, or per transient is never stated, so "one outstanding transaction" is ambiguous between three scopes.
+
+**B4 — The DMA write path in the directory is unspecified.**
+§3.11 `:419`: "a DMA write maps onto the GETM path with inline data" — but §3.3 `:241` says DMA_WRITE is "genuinely distinct from GETM", and §3.7 gives the DTR a dedicated DMA pending-op code. Appendix B has **no DMA row at all**: which state DMA_WRITE lands in, how sharers are invalidated, what the exit event is, how the DMA's copy is tracked in the sharer vector (it has an L1-lite), and what the L1-lite does on DMA_ACK are all open. SPEC_SHEET §12/§15 flag only the *gate-failure* behaviour of the DMA code, not the protocol path.
+
+**B5 — Intra-tile datapath width is never specified.**
+The LLD's key-signal table is 512-bit throughout: `evict_data[511:0]`, `fill_data[511:0]`, `l2_wdata[511:0]`, `mem_wdata[511:0]`, `tx_data[511:0]` — i.e. a whole cache line moves in one intra-tile transfer. The WP only ever specifies the *NoC* line transfer (9 flits). An implementer needs to know whether an L1 fill is one 512-bit transfer or eight 64-bit beats. SPEC_SHEET §15 lists the core-interface handshake and memory-port structure but not this.
+
+**B6 — Tile-ID → mesh-position mapping.** (HLD-1 `NOTE3`) The WP fixes the numbering T0=(0,0)… and the axis convention, but not where T-numbers sit in the mesh array / how the top-level wires the static `TILE_ID`. SPEC_SHEET §5 covers only the *tie-off*.
+
+**B7 — Address map has an unassigned hole, and the gated DMA window has no baseline owner.**
+§3.9 `:397–402` covers 0x0000_0000–0x0FFF_FFFF (memory), 0x1000_0000–0xEFFF_FFFF (unmapped, A8), 0xF000_0000–0xF000_FFFF (DMA regs, gated), 0xFFFF_FF00/04/08 (test). **0xF001_0000 – 0xFFFF_EEFF is in no region** — alias, error, or memory? And if the DMA gate fails, is 0xF000_0000 unmapped (A8) or still decoded by the tap?
+
+**B8 — FPGA stimulus source and debug infrastructure.** (HLD-F2 `STIM`) The on-board stimulus source (host bridge / VIO / free-running generator) is not specified, and ILA/VIO is future scope (§9). SPEC_SHEET §15 covers the *core-interface handshake* but not the board-level question that determines whether a Week-14 bitstream is self-contained.
+
+**B9 — A 2×2 DMA configuration is not specified.** (HLD-F1 `DMA22`) §3.11 gives slot arithmetic only for 4×4 (15+1, 30 KB, one reserved home code). If the gate passes, the FPGA build is 2×2 and has no defined DMA slot / home code / sharer arithmetic. SPEC_SHEET §12 notes the arithmetic is 4×4-only but §15 doesn't list it as an open gap.
+
+**B10 — Tree-PLRU update rule.** §4.4 `:519` describes the 3-node tree but not the set/clear update rule or the victim-way tie-break. The paper leans on "deterministic" (§4.4) but two legal implementations can differ.
+
+**B11 — NIC FIFO depth (borderline — SPEC_SHEET already flags it).** The intended value (4/VC) is visible from §3.5's credit depth and the LLD, but the WP only ever ties "depth 4" to the *router* per-port FIFO, and never says whether the NIC TX FIFO must absorb a 9-flit packet or stalls. Reasonable as flagged; I would keep it but soften the wording.
+
+---
+
+# 3. What the SPEC_SHEET §15 ledger is missing
+
+All of these are flagged in the WP or the diagrams, and none appear in SPEC_SHEET §15 (which currently lists 14 items). In priority order:
+
+| # | Missing ⚠ item | Ref |
+|---|---|---|
+| 1 | Forward path: old owner's release/downgrade is undefined (breaks A1.1, A1.3) | A2 |
+| 2 | L1 FSM has no FWD_GETS/FWD_GETM arrival row | A3 |
+| 3 | `DIR_E + PUTM` undefined after a silent E→M upgrade | A1 |
+| 4 | "Any state → DIR_EVICT" contradicts the single-exit rule | A4 |
+| 5 | Bank-request queue location (NIC vs bank arbiter) | A12 |
+| 6 | Fairness bound composition with output round-robin; "round" undefined | B1 |
+| 7 | Dirty eviction concurrent with an outstanding miss | B2 |
+| 8 | DMA directory path (no Appendix B rows) | B4 |
+| 9 | Intra-tile 512-bit line datapath width | B5 |
+| 10 | Address-map hole 0xF001_0000–0xFFFF_EEFF; baseline owner of 0xF000_0000 | B7 |
+| 11 | Tile-ID → mesh-position mapping | B6 |
+| 12 | FPGA stimulus source / ILA-VIO | B8 |
+| 13 | 2×2 DMA configuration | B9 |
+| 14 | Tree-PLRU update rule | B10 |
+
+**Plus these four WP-side defects the SPEC_SHEET silently inherits rather than flags:** §6.1's 19 b L2 tag at 2×2 (A7), §6.1's BRAM ceiling vs the 80 figure (A8), §4.4's LRU arithmetic (A9), §7.1 vs §7.2 schedule (A10), and the "Version 5.0" footer (A11). Also §5.2 vs §5.3 (A6) — the SPEC_SHEET §14 silently takes the §5.3 side, which is the correct one; the outlier is the WP's own §5.2 sentence.
+
+One consistency note in the SPEC_SHEET's favour: §13's 204-term baseline cross is **derived**, not in the WP (the WP states only 238, and HLD-5 lists 238 as the closure target). It is labelled correctly, but the WP should state the 204 baseline figure too so the coverage section doesn't claim a target the baseline cannot meet.
+
+---
+
+# 4. Suggested fix order (if you want the mentor-facing set tightened fast)
+
+1. **A1, A2, A3** — these three are the ones that would survive a mentor's "what happens on this transition?" question and currently have no answer in the FSMs. Fixing A2/A3 also forces the A1 fix.
+2. **A4, A5** — internal WP contradictions, cheap to fix (edit Appendix B / §3.4).
+3. **A6, A7, A8, A9, A10, A11, A16** — pure text/arithmetic errors in the WP; an afternoon's work and they are the kind of thing that makes a reviewer distrust the rest.
+4. **B1, B2, B4** — the three real design gaps; each needs a decision from you (or a mentor), not an edit.
+5. **§15 additions** (13–14 items above) — mechanical once the above are decided.
+
+I did not modify any of the attached files — this is a read-only review. Tell me which cluster you want to take first and I'll draft the patch (Appendix B rows + LLD-3 state diagram + SPEC_SHEET §15 delta) rather than leave it as prose.

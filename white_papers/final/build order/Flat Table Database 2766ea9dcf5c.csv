@@ -1,0 +1,21 @@
+Module,Level,Parent,Type,Subsystem,Build Order,Checklist
+user_project_wrapper,0,—,ROOT,,99,No
+interconnect,2,user_project_wrapper,BRANCH,Interconnect,50,No
+router,3,interconnect,BRANCH,Router,35,No
+nic,3,interconnect,LEAF,NIC,30,No
+dir_ctrl,3,interconnect,LEAF,Dir,28,No
+l2_bank,3,interconnect,LEAF,L2,25,No
+l1_lite,3,dma_tile,LEAF,DMA,80,No
+dma_tile,2,user_project_wrapper,BRANCH,DMA,85,No
+clock_reset,1,user_project_wrapper,BRANCH,Clk,20,No
+clock_gen,2,clock_reset,LEAF,Clk,01,No
+clock_divider,2,clock_reset,LEAF,Clk,03,No
+reset_sync,2,clock_reset,LEAF,Clk,02,No
+perf_counters,1,user_project_wrapper,BRANCH,Perf,90,No
+perf_top,2,perf_counters,BRANCH,Perf,87,No
+rv32i_subsystem,1,user_project_wrapper,BRANCH,CPU,40,No
+imem_sram,2,rv32i_subsystem,LEAF,CPU,05,No
+dmem_sram,2,rv32i_subsystem,LEAF,CPU,06,No
+cpu_ctrl_reg,2,rv32i_subsystem,LEAF,CPU,07,No
+l1_cache,2,rv32i_subsystem,LEAF,CPU,10,No
+l1_mesi_ctrl,3,l1_cache,LEAF,L1,11,No
